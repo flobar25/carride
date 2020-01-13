@@ -8,6 +8,8 @@ void ofApp::setup(){
     ofSetFrameRate(30);
     midiIn.openPort(0);
     midiIn.addListener(this);
+    ofEnableDepthTest();
+    initMesh(1000, 1000);
 }
 
 void ofApp::exit(){
@@ -25,7 +27,10 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+    ofSetBackgroundColor(ofColor::black);
     cam.begin();
+    mesh.drawWireframe();
+    //mesh.drawFaces();
     cam.end();
     
     // capture the image if recording is started
@@ -34,6 +39,37 @@ void ofApp::draw(){
     if (recording){
         screenCapture.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
         recorder.addFrame(screenCapture);
+    }
+}
+
+void ofApp::initMesh(int width, int height) {
+    mesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_TRIANGLES);
+    int index = 0;
+    for (int i = 0; i < width; i++){
+        for (int j = 0; j < height; j++){
+            int pan = j % 2 == 0 ? 0 : TRIANGLE_SIZE / 2;
+            
+            mesh.addVertex(ofPoint(i * TRIANGLE_SIZE + pan, j * TRIANGLE_SIZE));
+            mesh.addVertex(ofPoint((i + 0.5 ) * TRIANGLE_SIZE + pan, (j + 1) * TRIANGLE_SIZE));
+            mesh.addVertex(ofPoint((i + 1) * TRIANGLE_SIZE + pan, j * TRIANGLE_SIZE));
+            mesh.addVertex(ofPoint((i + 1.5) * TRIANGLE_SIZE + pan, (j + 1) * TRIANGLE_SIZE));
+            
+            mesh.addIndex(index);
+            mesh.addIndex(index + 1);
+            mesh.addIndex(index + 2);
+            mesh.addIndex(index + 1);
+            mesh.addIndex(index + 2);
+            mesh.addIndex(index + 3);
+            
+            // add noise
+            for (int i = 0; i < 4; i++){
+                auto vertex = (ofPoint) mesh.getVertex(index + i);
+                vertex.z = ofNoise(vertex.x, vertex.y) * 20;
+                mesh.setVertex(index + i, vertex);
+            }
+            
+            index += 4;
+        }
     }
 }
 

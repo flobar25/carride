@@ -5,12 +5,15 @@
 #include "ofxImageSequenceRecorder.h"
 
 class ofApp : public ofBaseApp, public ofxMidiListener {
+    static const int TRIANGLE_SIZE = 10;
     
 public:
     void setup();
     void exit();
     void update();
     void draw();
+    
+    void initMesh(int width, int height);
     
     // recording
     void toggleRecording();
@@ -44,4 +47,7 @@ private:
     ofxImageSequenceRecorder recorder;
     Boolean recording;
     ofImage screenCapture;
+    
+    // elements of the visual
+    ofMesh mesh;
 };

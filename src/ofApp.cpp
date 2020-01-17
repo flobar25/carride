@@ -9,7 +9,7 @@ void ofApp::setup(){
     midiIn.openPort(0);
     midiIn.addListener(this);
     ofEnableDepthTest();
-    initMesh(1000, 1000);
+    initMesh(MESH_WIDTH, MESH_HEIGHT);
 }
 
 void ofApp::exit(){
@@ -29,7 +29,11 @@ void ofApp::update(){
 void ofApp::draw(){
     ofSetBackgroundColor(ofColor::black);
     cam.begin();
+    ofPushMatrix();
+    ofTranslate(-(MESH_WIDTH*TRIANGLE_SIZE)/2, -ofGetHeight()/2);
+    ofRotateDeg(20, -1, 0, 0);
     mesh.drawWireframe();
+    ofPopMatrix();
     //mesh.drawFaces();
     cam.end();
     

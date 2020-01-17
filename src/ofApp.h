@@ -6,6 +6,8 @@
 
 class ofApp : public ofBaseApp, public ofxMidiListener {
     static const int TRIANGLE_SIZE = 10;
+    static const int MESH_WIDTH = 100;
+    static const int MESH_HEIGHT = 100;
     
 public:
     void setup();

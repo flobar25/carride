@@ -1,5 +1,10 @@
 #include "ofApp.h"
 
+float waveValue = 0;
+float waveStartTime = 0.0;
+float waveLength = 0.0;
+
+
 //--------------------------------------------------------------
 void ofApp::setup(){
     recorder.setPrefix(ofToDataPath("recording/frame_"));
@@ -10,6 +15,7 @@ void ofApp::setup(){
     midiIn.addListener(this);
     ofEnableDepthTest();
     initMesh(MESH_WIDTH, MESH_HEIGHT);
+    shader.load("shaderVert.c", "shaderFrag.c");
 }
 
 void ofApp::exit(){
@@ -23,6 +29,11 @@ void ofApp::update(){
     std::stringstream strm;
     strm << "fps: " << ofGetFrameRate();
     ofSetWindowTitle(strm.str());
+    
+    if (waveValue > 0) {
+        waveValue -= ofGetElapsedTimef() - waveStartTime;
+    }
+    
 }
 
 //--------------------------------------------------------------
@@ -30,11 +41,21 @@ void ofApp::draw(){
     ofSetBackgroundColor(ofColor::black);
     cam.begin();
     ofPushMatrix();
+    
+    //shader stuff
+    shader.begin();
+    shader.setUniform1f("value", waveValue);
+    
+    // matrix stuff
     ofTranslate(-(MESH_WIDTH*TRIANGLE_SIZE)/2, -ofGetHeight()/2);
     ofRotateDeg(20, -1, 0, 0);
+    
+    // draw
     mesh.drawWireframe();
+    
+    //closing stuff
+    shader.end();
     ofPopMatrix();
-    //mesh.drawFaces();
     cam.end();
     
     // capture the image if recording is started
@@ -68,7 +89,7 @@ void ofApp::initMesh(int width, int height) {
             // add noise
             for (int i = 0; i < 4; i++){
                 auto vertex = (ofPoint) mesh.getVertex(index + i);
-                vertex.z = ofNoise(vertex.x, vertex.y) * 20;
+                vertex.z = (ofNoise(vertex.x, vertex.y) - 0.5) * 20;
                 mesh.setVertex(index + i, vertex);
             }
             
@@ -86,6 +107,8 @@ void ofApp::keyPressed(int key) {
         case 'p':
             captureScreen();
             break;
+        case 'w':
+            startWave();
         default:
             break;
     }
@@ -152,5 +175,10 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 void ofApp::toggleRecording(){
     recording = !recording;
+}
+
+void ofApp::startWave(){
+    waveValue = 5;
+    waveStartTime = ofGetElapsedTimef();
 }
 

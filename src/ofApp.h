@@ -36,7 +36,8 @@ public:
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
     
-
+    //events
+    void startWave();
     
 private:
     // midi
@@ -52,4 +53,8 @@ private:
     
     // elements of the visual
     ofMesh mesh;
+    
+    //shaders
+    ofShader shader;
+
 };

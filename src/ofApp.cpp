@@ -14,20 +14,36 @@ float connectionDistance = 100;
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+    //ofsetup
+    ofSetFrameRate(30);
+    ofEnableDepthTest();
+    
+    //recording setup
     recorder.setPrefix(ofToDataPath("recording/frame_"));
     recorder.setFormat("bmp");
     recorder.startThread();
-    ofSetFrameRate(30);
+    
+    // midi setup
     midiIn.openPort(0);
     midiIn.addListener(this);
-    ofEnableDepthTest();
+    
+    // shaders
+    floorShader.load("floorShaderVert.c", "floorShaderFrag.c");
+    spaceShader.load("spaceShaderVert.c", "spaceShaderFrag.c");
+    
+//    // fbo (needed to reduce aliasing)
+//    fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA, 4);
+    
+    // init objects
     initMesh(MESH_WIDTH, MESH_HEIGHT);
     initSphere();
     initSpaceMesh();
-    floorShader.load("floorShaderVert.c", "floorShaderFrag.c");
-    spaceShader.load("spaceShaderVert.c", "spaceShaderFrag.c");
-    post.init(ofGetWidth(), ofGetHeight());
+    
+    // post processing
+    post.init(ofGetWidth(), ofGetHeight(), 4);
     post.createPass<BloomPass>()->setEnabled(true);
+    post.setFlip(false);
+    
     startTime = ofGetElapsedTimef();
 }
 
@@ -51,46 +67,48 @@ void ofApp::update(){
         jitterValue -= ofGetElapsedTimef() - jitterStartTime;
     }
     
-//    cam.enableInertia();
-//    cam.move(0, 0, -1 * (ofGetElapsedTimef()/5.0f));
-//    cam.rotateDeg(ofNoise(ofGetElapsedTimef()) - 0.5, 0, 0, 10);
+    //    cam.enableInertia();
+//        cam.move(0, 0, -1 * (ofGetElapsedTimef()/5.0f));
+//        cam.rotateDeg(ofNoise(ofGetElapsedTimef()) - 0.5, 0, 0, 10);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    ofSetBackgroundColor(ofColor::black);
-    //ofBackground(0,0,255);
-    //cam.begin();
+    // setup gl state
+    ofEnableDepthTest();
+    //light.enable();
+    
     post.begin(cam);
+    ofClear(0,0,0,255);
+    ofSetLineWidth(1);
     
-    ofPushMatrix();
-
     // matrix stuff
-//    ofTranslate(-(MESH_WIDTH*TRIANGLE_SIZE)/2, -ofGetHeight()/2);
-//    ofRotateDeg(90, -1, 0, 0);
+    ofPushMatrix();
+    ofTranslate(-(MESH_WIDTH*TRIANGLE_SIZE)/2, -ofGetHeight()/2);
+    ofRotateDeg(90, -1, 0, 0);
     
-    
+    // draw stuff
+    //floor
     floorShader.begin();
     floorShader.setUniform1f("value", waveValue);
     floorShader.setUniform1f("cameraZ", cam.getZ());
-    //ofLog(OF_LOG_NOTICE, ofToString(cam.getZ()));
     floorShader.setUniform1f("meshHeight", MESH_HEIGHT * TRIANGLE_SIZE);
     floorMesh.drawWireframe();
+    ofSetColor(ofColor::red);
+    trianglesMesh.draw();
     floorShader.end();
-
+    
+    //space
     spaceShader.begin();
     spaceShader.setUniform1f("value", jitterValue);
     spaceMesh.draw();
     spaceShader.end();
     
-    //sphere.drawWireframe();
-    //spaceImage.draw(0, 0);
-
-
-    ofPopMatrix();
     
-    //cam.end();
+    // end
+    ofPopMatrix();
     post.end();
+
     
     // capture the image if recording is started
     // this can slow down the rendering by a lot, so be aware of the framerate...
@@ -102,32 +120,68 @@ void ofApp::draw(){
 }
 
 void ofApp::initMesh(int width, int height) {
+    trianglesMesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_TRIANGLES);
     floorMesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_TRIANGLES);
+    int trianglesIndex = 0;
     int index = 0;
     for (int i = 0; i < width; i++){
         for (int j = 0; j < height; j++){
             int pan = j % 2 == 0 ? 0 : TRIANGLE_SIZE / 2;
             
-            floorMesh.addVertex(ofPoint(i * TRIANGLE_SIZE + pan, j * TRIANGLE_SIZE));
-            floorMesh.addVertex(ofPoint((i + 0.5 ) * TRIANGLE_SIZE + pan, (j + 1) * TRIANGLE_SIZE));
-            floorMesh.addVertex(ofPoint((i + 1) * TRIANGLE_SIZE + pan, j * TRIANGLE_SIZE));
-            floorMesh.addVertex(ofPoint((i + 1.5) * TRIANGLE_SIZE + pan, (j + 1) * TRIANGLE_SIZE));
+            int x, y, z = 0;
             
+            x = i * TRIANGLE_SIZE + pan;
+            y = j * TRIANGLE_SIZE;
+            z = (ofNoise(x, y) - 0.5) * 20;
+            ofPoint point1 = ofPoint(x, y, z);
+
+            x = (i + 0.5 ) * TRIANGLE_SIZE + pan;
+            y = (j + 1) * TRIANGLE_SIZE;
+            z = (ofNoise(x, y) - 0.5) * 20;
+            ofPoint point2 = ofPoint(x, y, z);
+            
+            x = (i + 1) * TRIANGLE_SIZE + pan;
+            y = j * TRIANGLE_SIZE;
+            z = (ofNoise(x, y) - 0.5) * 20;
+            ofPoint point3 = ofPoint(x, y, z);
+            
+            x = (i + 1.5) * TRIANGLE_SIZE + pan;
+            y = (j + 1) * TRIANGLE_SIZE;
+            z = (ofNoise(x, y) - 0.5) * 20;
+            ofPoint point4 = ofPoint(x, y, z);
+            
+            
+            floorMesh.addVertex(point1);
+            floorMesh.addVertex(point2);
+            floorMesh.addVertex(point3);
+            floorMesh.addVertex(point4);
+
             floorMesh.addIndex(index);
             floorMesh.addIndex(index + 1);
             floorMesh.addIndex(index + 2);
             floorMesh.addIndex(index + 1);
             floorMesh.addIndex(index + 2);
             floorMesh.addIndex(index + 3);
-            
-            // add noise
-            for (int i = 0; i < 4; i++){
-                auto vertex = (ofPoint) floorMesh.getVertex(index + i);
-                vertex.z = (ofNoise(vertex.x, vertex.y) - 0.5) * 20;
-                floorMesh.setVertex(index + i, vertex);
-            }
-            
             index += 4;
+            
+            // add some random triangles
+            if (ofRandom(1) > 0.75) {
+                trianglesMesh.addVertex(point1);
+                trianglesMesh.addVertex(point2);
+                trianglesMesh.addVertex(point3);
+                trianglesMesh.addIndex(trianglesIndex);
+                trianglesMesh.addIndex(trianglesIndex + 1);
+                trianglesMesh.addIndex(trianglesIndex + 2);
+                
+                if (ofRandom(1) > 0.75) {
+                    trianglesMesh.addVertex(point4);
+                    trianglesMesh.addIndex(trianglesIndex + 1);
+                    trianglesMesh.addIndex(trianglesIndex + 2);
+                    trianglesMesh.addIndex(trianglesIndex + 3);
+                    trianglesIndex += 1;
+                }
+                trianglesIndex += 3;
+            }
         }
     }
 }

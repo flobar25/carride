@@ -57,6 +57,7 @@ private:
     
     // elements of the visual
     ofMesh floorMesh;
+    ofMesh trianglesMesh;
     ofMesh sphere;
     ofMesh spaceMesh;
     ofImage spaceImage;
@@ -66,5 +67,6 @@ private:
     ofShader spaceShader;
     
     ofxPostProcessing post;
+    ofFbo fbo;
 
 };

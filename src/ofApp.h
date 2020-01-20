@@ -16,9 +16,8 @@ public:
     void update();
     void draw();
     
-    void initMesh(int width, int height);
+    void initMeshes(int width, int height);
     void initSphere();
-    void initSpaceMesh();
     
     // recording
     void toggleRecording();
@@ -42,6 +41,7 @@ public:
     //events
     void startWave();
     void startJitter();
+    void triggerTriangles(int i);
     
 private:
     // midi
@@ -57,7 +57,8 @@ private:
     
     // elements of the visual
     ofMesh floorMesh;
-    ofMesh trianglesMesh;
+    vector<ofMesh> trianglesMeshes;
+    vector<bool> trianglesMeshesActivation;
     ofMesh sphere;
     ofMesh spaceMesh;
     ofImage spaceImage;
@@ -67,6 +68,5 @@ private:
     ofShader spaceShader;
     
     ofxPostProcessing post;
-    ofFbo fbo;
 
 };

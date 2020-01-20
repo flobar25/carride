@@ -1,16 +1,14 @@
 #include "ofApp.h"
 
 float startTime = 0;
-
 float waveValue = 0;
 float waveStartTime = 0.0;
-
 float jitterValue = 0;
 float jitterStartTime = 0.0;
-
-//int imageSize = 300;
 float intensityThreshold = 130.0;
 float connectionDistance = 100;
+int trianglesVectorSize = 5;
+
 
 //--------------------------------------------------------------
 void ofApp::setup(){
@@ -31,13 +29,10 @@ void ofApp::setup(){
     floorShader.load("floorShaderVert.c", "floorShaderFrag.c");
     spaceShader.load("spaceShaderVert.c", "spaceShaderFrag.c");
     
-//    // fbo (needed to reduce aliasing)
-//    fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA, 4);
-    
     // init objects
-    initMesh(MESH_WIDTH, MESH_HEIGHT);
+    initMeshes(MESH_WIDTH, MESH_HEIGHT);
     initSphere();
-    initSpaceMesh();
+    
     
     // post processing
     post.init(ofGetWidth(), ofGetHeight(), 4);
@@ -68,8 +63,8 @@ void ofApp::update(){
     }
     
     //    cam.enableInertia();
-//        cam.move(0, 0, -1 * (ofGetElapsedTimef()/5.0f));
-//        cam.rotateDeg(ofNoise(ofGetElapsedTimef()) - 0.5, 0, 0, 10);
+    cam.move(0, 0, -1 * (ofGetElapsedTimef()/5.0f));
+    //        cam.rotateDeg(ofNoise(ofGetElapsedTimef()) - 0.5, 0, 0, 10);
 }
 
 //--------------------------------------------------------------
@@ -94,8 +89,13 @@ void ofApp::draw(){
     floorShader.setUniform1f("cameraZ", cam.getZ());
     floorShader.setUniform1f("meshHeight", MESH_HEIGHT * TRIANGLE_SIZE);
     floorMesh.drawWireframe();
-    ofSetColor(ofColor::red);
-    trianglesMesh.draw();
+    for (int i = 0; i < trianglesVectorSize; i++){
+        //ofLog(ofLogLevel::OF_LOG_NOTICE, ofToString(trianglesMeshesActivation[i]));
+        if (trianglesMeshesActivation[i]){
+            trianglesMeshes[i].draw();
+        }
+    }
+    
     floorShader.end();
     
     //space
@@ -108,7 +108,7 @@ void ofApp::draw(){
     // end
     ofPopMatrix();
     post.end();
-
+    
     
     // capture the image if recording is started
     // this can slow down the rendering by a lot, so be aware of the framerate...
@@ -119,78 +119,9 @@ void ofApp::draw(){
     }
 }
 
-void ofApp::initMesh(int width, int height) {
-    trianglesMesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_TRIANGLES);
-    floorMesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_TRIANGLES);
-    int trianglesIndex = 0;
-    int index = 0;
-    for (int i = 0; i < width; i++){
-        for (int j = 0; j < height; j++){
-            int pan = j % 2 == 0 ? 0 : TRIANGLE_SIZE / 2;
-            
-            int x, y, z = 0;
-            
-            x = i * TRIANGLE_SIZE + pan;
-            y = j * TRIANGLE_SIZE;
-            z = (ofNoise(x, y) - 0.5) * 20;
-            ofPoint point1 = ofPoint(x, y, z);
-
-            x = (i + 0.5 ) * TRIANGLE_SIZE + pan;
-            y = (j + 1) * TRIANGLE_SIZE;
-            z = (ofNoise(x, y) - 0.5) * 20;
-            ofPoint point2 = ofPoint(x, y, z);
-            
-            x = (i + 1) * TRIANGLE_SIZE + pan;
-            y = j * TRIANGLE_SIZE;
-            z = (ofNoise(x, y) - 0.5) * 20;
-            ofPoint point3 = ofPoint(x, y, z);
-            
-            x = (i + 1.5) * TRIANGLE_SIZE + pan;
-            y = (j + 1) * TRIANGLE_SIZE;
-            z = (ofNoise(x, y) - 0.5) * 20;
-            ofPoint point4 = ofPoint(x, y, z);
-            
-            
-            floorMesh.addVertex(point1);
-            floorMesh.addVertex(point2);
-            floorMesh.addVertex(point3);
-            floorMesh.addVertex(point4);
-
-            floorMesh.addIndex(index);
-            floorMesh.addIndex(index + 1);
-            floorMesh.addIndex(index + 2);
-            floorMesh.addIndex(index + 1);
-            floorMesh.addIndex(index + 2);
-            floorMesh.addIndex(index + 3);
-            index += 4;
-            
-            // add some random triangles
-            if (ofRandom(1) > 0.75) {
-                trianglesMesh.addVertex(point1);
-                trianglesMesh.addVertex(point2);
-                trianglesMesh.addVertex(point3);
-                trianglesMesh.addIndex(trianglesIndex);
-                trianglesMesh.addIndex(trianglesIndex + 1);
-                trianglesMesh.addIndex(trianglesIndex + 2);
-                
-                if (ofRandom(1) > 0.75) {
-                    trianglesMesh.addVertex(point4);
-                    trianglesMesh.addIndex(trianglesIndex + 1);
-                    trianglesMesh.addIndex(trianglesIndex + 2);
-                    trianglesMesh.addIndex(trianglesIndex + 3);
-                    trianglesIndex += 1;
-                }
-                trianglesIndex += 3;
-            }
-        }
-    }
-}
-
-void ofApp::initSphere() {
-    sphere = ofSpherePrimitive(100, 50).getMesh();
-}
-
-void ofApp::initSpaceMesh() {
+void ofApp::initMeshes(int width, int height) {
+    
+    // space mesh
     spaceImage.load("space3.jpg");
     spaceImage.resize(MESH_WIDTH*2, MESH_HEIGHT*2);
     spaceMesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
@@ -223,7 +154,99 @@ void ofApp::initSpaceMesh() {
             }
         }
     }
+    
+    
+    vector<int> triangleMeshesIndexes;
+    // triangles and floor meshes
+    for (int i = 0; i < trianglesVectorSize; i++){
+        auto tempMesh = ofMesh();
+        tempMesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_TRIANGLES);
+        trianglesMeshes.push_back(tempMesh);
+        triangleMeshesIndexes.push_back(0);
+        trianglesMeshesActivation.push_back(false);
+    }
+    
+    
+    floorMesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_TRIANGLES);
+    int index = 0;
+    for (int i = 0; i < width; i++){
+        for (int j = 0; j < height; j++){
+            int pan = j % 2 == 0 ? 0 : TRIANGLE_SIZE / 2;
+            
+            int x, y, z = 0;
+            
+            x = i * TRIANGLE_SIZE + pan;
+            y = j * TRIANGLE_SIZE;
+            z = (ofNoise(x, y) - 0.5) * 20;
+            ofPoint point1 = ofPoint(x, y, z);
+            
+            x = (i + 0.5 ) * TRIANGLE_SIZE + pan;
+            y = (j + 1) * TRIANGLE_SIZE;
+            z = (ofNoise(x, y) - 0.5) * 20;
+            ofPoint point2 = ofPoint(x, y, z);
+            
+            x = (i + 1) * TRIANGLE_SIZE + pan;
+            y = j * TRIANGLE_SIZE;
+            z = (ofNoise(x, y) - 0.5) * 20;
+            ofPoint point3 = ofPoint(x, y, z);
+            
+            x = (i + 1.5) * TRIANGLE_SIZE + pan;
+            y = (j + 1) * TRIANGLE_SIZE;
+            z = (ofNoise(x, y) - 0.5) * 20;
+            ofPoint point4 = ofPoint(x, y, z);
+            
+            
+            floorMesh.addVertex(point1);
+            floorMesh.addVertex(point2);
+            floorMesh.addVertex(point3);
+            floorMesh.addVertex(point4);
+            
+            floorMesh.addIndex(index);
+            floorMesh.addIndex(index + 1);
+            floorMesh.addIndex(index + 2);
+            floorMesh.addIndex(index + 1);
+            floorMesh.addIndex(index + 2);
+            floorMesh.addIndex(index + 3);
+            index += 4;
+            
+            // add some random triangles
+            if (ofRandom(1) > 0.75) {
+                int meshIdx = (int) ofRandom(trianglesVectorSize - 0.1);
+                ofMesh& trianglesMesh = trianglesMeshes[meshIdx];
+                //ofLog(ofLogLevel::OF_LOG_NOTICE, ofToString(trianglesMesh.getVertices().size()));
+                int trianglesIndex = triangleMeshesIndexes[meshIdx];
+                
+                trianglesMesh.addVertex(point1);
+                trianglesMesh.addColor(spaceMesh.getColors().at(ofRandom(spaceMesh.getColors().size())));
+                trianglesMesh.addVertex(point2);
+                trianglesMesh.addColor(spaceMesh.getColors().at(ofRandom(spaceMesh.getColors().size())));
+                trianglesMesh.addVertex(point3);
+                trianglesMesh.addColor(spaceMesh.getColors().at(ofRandom(spaceMesh.getColors().size())));
+                trianglesMesh.addIndex(trianglesIndex);
+                trianglesMesh.addIndex(trianglesIndex + 1);
+                trianglesMesh.addIndex(trianglesIndex + 2);
+                
+                if (ofRandom(1) > 0.75) {
+                    trianglesMesh.addVertex(point4);
+                    trianglesMesh.addColor(spaceMesh.getColors().at(ofRandom(spaceMesh.getColors().size())));
+                    trianglesMesh.addIndex(trianglesIndex + 1);
+                    trianglesMesh.addIndex(trianglesIndex + 2);
+                    trianglesMesh.addIndex(trianglesIndex + 3);
+                    trianglesIndex +=  1;
+                }
+                trianglesIndex +=  3;
+                triangleMeshesIndexes[meshIdx] = trianglesIndex;
+                //ofLog(ofLogLevel::OF_LOG_NOTICE, ofToString(trianglesMesh.getVertices().size()));
+            }
+        }
+    }
 }
+
+void ofApp::initSphere() {
+    sphere = ofSpherePrimitive(100, 50).getMesh();
+}
+
+
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
@@ -239,6 +262,21 @@ void ofApp::keyPressed(int key) {
             break;
         case 'j':
             startJitter();
+            break;
+        case 'a':
+            triggerTriangles(0);
+            break;
+        case 's':
+            triggerTriangles(1);
+            break;
+        case 'd':
+            triggerTriangles(2);
+            break;
+        case 'f':
+            triggerTriangles(3);
+            break;
+        case 'g':
+            triggerTriangles(4);
             break;
         default:
             break;
@@ -318,3 +356,6 @@ void ofApp::startJitter(){
     jitterStartTime = ofGetElapsedTimef();
 }
 
+void ofApp::triggerTriangles(int i){
+    trianglesMeshesActivation[i] = trianglesMeshesActivation[i] ? false : true;
+}

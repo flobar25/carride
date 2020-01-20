@@ -7,7 +7,7 @@
 class ofApp : public ofBaseApp, public ofxMidiListener {
     static const int TRIANGLE_SIZE = 10;
     static const int MESH_WIDTH = 100;
-    static const int MESH_HEIGHT = 100;
+    static const int MESH_HEIGHT = 250;
     
 public:
     void setup();
@@ -16,6 +16,8 @@ public:
     void draw();
     
     void initMesh(int width, int height);
+    void initSphere();
+    void initSpaceMesh();
     
     // recording
     void toggleRecording();
@@ -38,6 +40,7 @@ public:
     
     //events
     void startWave();
+    void startJitter();
     
 private:
     // midi
@@ -52,9 +55,13 @@ private:
     ofImage screenCapture;
     
     // elements of the visual
-    ofMesh mesh;
+    ofMesh floorMesh;
+    ofMesh sphere;
+    ofMesh spaceMesh;
+    ofImage spaceImage;
     
     //shaders
-    ofShader shader;
+    ofShader floorShader;
+    ofShader spaceShader;
 
 };

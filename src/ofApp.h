@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxMidi.h"
 #include "ofxImageSequenceRecorder.h"
+#include "ofxPostProcessing.h"
 
 class ofApp : public ofBaseApp, public ofxMidiListener {
     static const int TRIANGLE_SIZE = 10;
@@ -63,5 +64,7 @@ private:
     //shaders
     ofShader floorShader;
     ofShader spaceShader;
+    
+    ofxPostProcessing post;
 
 };

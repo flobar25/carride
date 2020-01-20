@@ -26,8 +26,9 @@ void ofApp::setup(){
     initSpaceMesh();
     floorShader.load("floorShaderVert.c", "floorShaderFrag.c");
     spaceShader.load("spaceShaderVert.c", "spaceShaderFrag.c");
+    post.init(ofGetWidth(), ofGetHeight());
+    post.createPass<BloomPass>()->setEnabled(true);
     startTime = ofGetElapsedTimef();
-    
 }
 
 void ofApp::exit(){
@@ -50,27 +51,29 @@ void ofApp::update(){
         jitterValue -= ofGetElapsedTimef() - jitterStartTime;
     }
     
-    cam.enableInertia();
-    cam.move(0, 0, - ofGetElapsedTimef());
-    //cam.rotateDeg(ofNoise(ofGetElapsedTimef()), 0, 0, 0.5);
+//    cam.enableInertia();
+//    cam.move(0, 0, -1 * (ofGetElapsedTimef()/5.0f));
+//    cam.rotateDeg(ofNoise(ofGetElapsedTimef()) - 0.5, 0, 0, 10);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
     ofSetBackgroundColor(ofColor::black);
     //ofBackground(0,0,255);
-    cam.begin();
+    //cam.begin();
+    post.begin(cam);
     
     ofPushMatrix();
 
     // matrix stuff
-    ofTranslate(-(MESH_WIDTH*TRIANGLE_SIZE)/2, -ofGetHeight()/2);
-    ofRotateDeg(90, -1, 0, 0);
+//    ofTranslate(-(MESH_WIDTH*TRIANGLE_SIZE)/2, -ofGetHeight()/2);
+//    ofRotateDeg(90, -1, 0, 0);
     
     
     floorShader.begin();
     floorShader.setUniform1f("value", waveValue);
     floorShader.setUniform1f("cameraZ", cam.getZ());
+    //ofLog(OF_LOG_NOTICE, ofToString(cam.getZ()));
     floorShader.setUniform1f("meshHeight", MESH_HEIGHT * TRIANGLE_SIZE);
     floorMesh.drawWireframe();
     floorShader.end();
@@ -80,13 +83,14 @@ void ofApp::draw(){
     spaceMesh.draw();
     spaceShader.end();
     
-    sphere.drawWireframe();
+    //sphere.drawWireframe();
     //spaceImage.draw(0, 0);
 
 
     ofPopMatrix();
     
-    cam.end();
+    //cam.end();
+    post.end();
     
     // capture the image if recording is started
     // this can slow down the rendering by a lot, so be aware of the framerate...

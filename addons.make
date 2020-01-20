@@ -1,2 +1,3 @@
 ofxImageSequenceRecorder
 ofxMidi
+ofxPostProcessing

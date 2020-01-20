@@ -3,8 +3,8 @@
 #extension GL_EXT_gpu_shader4: enable
 
 uniform float value = 0.0;
-uniform int cameraZ = 0;
-unitorm int meshHeight = 0;
+uniform float cameraZ = 0;
+uniform int meshHeight = 0;
 
 void main() {
     vec3 v = gl_Vertex.xyz;
@@ -16,10 +16,10 @@ void main() {
         v.z = v.z - value *10;
     }
     
-    if (v.y < -cameraZ){
-        //v.y += meshHeight * (1 + (cameraZ / meshHeight));
-        v.y += 300;
-    }
+//    if (v.y < -cameraZ){
+//        //v.y += meshHeight * (1 + (-cameraZ / meshHeight));
+//        v.y += 2500;
+//    }
     
     vec4 posHomog = vec4(v, 1.0);
     gl_Position = gl_ModelViewProjectionMatrix * posHomog;

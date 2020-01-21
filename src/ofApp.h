@@ -6,9 +6,6 @@
 #include "ofxPostProcessing.h"
 
 class ofApp : public ofBaseApp, public ofxMidiListener {
-    static const int TRIANGLE_SIZE = 10;
-    static const int MESH_WIDTH = 100;
-    static const int MESH_HEIGHT = 250;
     
 public:
     void setup();
@@ -62,10 +59,13 @@ private:
     ofMesh sphere;
     ofMesh spaceMesh;
     ofImage spaceImage;
+    ofMesh dotsMesh;
+    ofTexture dotsTexture;
     
     //shaders
     ofShader floorShader;
     ofShader spaceShader;
+    ofShader dotShader;
     
     ofxPostProcessing post;
 

@@ -1,5 +1,8 @@
 #include "ofApp.h"
 
+static const int TRIANGLE_SIZE = 10;
+static const int MESH_WIDTH = 100;
+static const int MESH_HEIGHT = 250;
 float startTime = 0;
 float waveValue = 0;
 float waveStartTime = 0.0;
@@ -8,6 +11,7 @@ float jitterStartTime = 0.0;
 float intensityThreshold = 130.0;
 float connectionDistance = 100;
 int trianglesVectorSize = 5;
+int pointsCount = 50;
 
 
 //--------------------------------------------------------------
@@ -28,10 +32,14 @@ void ofApp::setup(){
     // shaders
     floorShader.load("floorShaderVert.c", "floorShaderFrag.c");
     spaceShader.load("spaceShaderVert.c", "spaceShaderFrag.c");
+    dotShader.load("dotShaderVert.c", "dotShaderFrag.c");
+    ofDisableArbTex();
+    ofLoadImage(dotsTexture, "dot.png");
     
     // init objects
     initMeshes(MESH_WIDTH, MESH_HEIGHT);
     initSphere();
+    
     
     
     // post processing
@@ -95,7 +103,6 @@ void ofApp::draw(){
             trianglesMeshes[i].draw();
         }
     }
-    
     floorShader.end();
     
     //space
@@ -104,6 +111,18 @@ void ofApp::draw(){
     spaceMesh.draw();
     spaceShader.end();
     
+    glDepthMask(GL_FALSE);
+    ofSetColor(255, 100, 90);
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
+    ofEnablePointSprites();
+    dotShader.begin();
+    dotsTexture.bind();
+    dotsMesh.draw();
+    dotsTexture.unbind();
+    dotShader.end();
+    ofDisablePointSprites();
+    ofDisableBlendMode();
+    glDepthMask(GL_TRUE);
     
     // end
     ofPopMatrix();
@@ -239,6 +258,11 @@ void ofApp::initMeshes(int width, int height) {
                 //ofLog(ofLogLevel::OF_LOG_NOTICE, ofToString(trianglesMesh.getVertices().size()));
             }
         }
+    }
+    
+    dotsMesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_POINTS);
+    for (int i = 0; i < pointsCount; i++){
+        dotsMesh.addVertex(ofPoint(500 + ofRandom(200), 500 + ofRandom(200), 500 + ofRandom(200)));
     }
 }
 

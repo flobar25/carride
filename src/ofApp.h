@@ -3,7 +3,6 @@
 #include "ofMain.h"
 #include "ofxMidi.h"
 #include "ofxImageSequenceRecorder.h"
-#include "ofxPostProcessing.h"
 #include "ofxPostGlitch.h"
 
 class ofApp : public ofBaseApp, public ofxMidiListener {
@@ -70,9 +69,7 @@ private:
     ofShader dummyShader;
     
     // post procesing
-    ofxPostProcessing post;
     ofxPostGlitch postGlitch;
     ofFbo fbo;
-    ofFbo fbo2;
     
 };

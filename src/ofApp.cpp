@@ -35,7 +35,7 @@ void ofApp::setup(){
     spaceShader.load("spaceShaderVert.c", "spaceShaderFrag.c");
     dummyShader.load("dummyShaderVert.c", "dummyShaderFrag.c");
     dotShader.load("dotShaderVert.c", "dotShaderFrag.c");
-    // !!!!!!!!this line!!!!!!!
+    
     ofDisableArbTex();
     ofLoadImage(dotsTexture, "dot.png");
     ofEnableArbTex();
@@ -44,16 +44,7 @@ void ofApp::setup(){
     initMeshes(MESH_WIDTH, MESH_HEIGHT);
     initSphere();
     
-    
-    
-//    // post processing
-//    post.init(ofGetWidth(), ofGetHeight(), FBO_SAMPLES);
-//    post.createPass<BloomPass>()->setEnabled(true);
-//    post.setFlip(false);
-    
-    
     fbo.allocate(ofGetWidth(), ofGetHeight());//, GL_DEPTH_COMPONENT24, FBO_SAMPLES);
-    //fbo2.allocate(ofGetWidth(), ofGetHeight());//, GL_DEPTH_COMPONENT24, FBO_SAMPLES);
     postGlitch.setup(&fbo);
     
     startTime = ofGetElapsedTimef();
@@ -81,7 +72,7 @@ void ofApp::update(){
     
 //    postGlitch.setFx(OFXPOSTGLITCH_NOISE,true);
 //    postGlitch.setFx(OFXPOSTGLITCH_CUTSLIDER,true);
-    postGlitch.setFx(OFXPOSTGLITCH_GLOW,true);
+//    postGlitch.setFx(OFXPOSTGLITCH_GLOW,true);
     
     //    cam.enableInertia();
     cam.move(0, 0, -1 * (ofGetElapsedTimef()/5.0f));
@@ -91,21 +82,19 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    // setup gl state
     ofEnableDepthTest();
     
+    // begin
     fbo.begin();
     cam.begin();
     ofClear(0,0,0,255);
     ofSetLineWidth(1);
-
     // matrix stuff
     ofPushMatrix();
     ofTranslate(-(MESH_WIDTH*TRIANGLE_SIZE)/2, -ofGetHeight()/2);
     ofRotateDeg(90, -1, 0, 0);
 
-    // draw stuff
-    //floor
+    // draw floor
     floorShader.begin();
     floorShader.setUniform1f("value", waveValue);
     floorShader.setUniform1f("cameraZ", cam.getZ());
@@ -119,12 +108,13 @@ void ofApp::draw(){
     }
     floorShader.end();
 
-    //space
+    // draw space
     spaceShader.begin();
     spaceShader.setUniform1f("value", jitterValue);
     spaceMesh.draw();
     spaceShader.end();
 
+    // draw dots
     glDepthMask(GL_FALSE);
     ofSetColor(255, 100, 90);
     ofEnableBlendMode(OF_BLENDMODE_ADD);
@@ -137,38 +127,16 @@ void ofApp::draw(){
     ofDisablePointSprites();
     ofDisableBlendMode();
     glDepthMask(GL_TRUE);
+    
+    // close stuff
     ofPopMatrix();
     cam.end();
     fbo.end();
     
-
-//    fbo2.begin();
-//    ofClear(0, 0,0, 255);
-//    dummyShader.begin();
-//    fbo.draw(0,0);
-//    dummyShader.end();
-//    fbo2.end();
-
+    // post processing and draw fbo
     postGlitch.generateFx();
     ofSetColor(255);
     fbo.draw(0,0);
-    
-    // end
-//    post.begin();
-    //    postGlitch.generateFx();
-    //    ofSetColor(255);
-    //    fbo.draw(0,0);
-//    post.end();
-    
-//    fbo.begin();
-//    //ofClear(0, 0, 0, 255);
-//    post.draw();
-//    fbo.end();
-//
-//    postGlitch.generateFx();
-//    ofSetColor(255);
-//    fbo.draw(0,0);
-    
     
     // capture the image if recording is started
     // this can slow down the rendering by a lot, so be aware of the framerate...
@@ -346,6 +314,18 @@ void ofApp::keyPressed(int key) {
         default:
             break;
     }
+    
+    if (key == '1') postGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE    , true);
+    if (key == '2') postGlitch.setFx(OFXPOSTGLITCH_GLOW            , true);
+    if (key == '3') postGlitch.setFx(OFXPOSTGLITCH_SHAKER            , true);
+    if (key == '4') postGlitch.setFx(OFXPOSTGLITCH_CUTSLIDER        , true);
+    if (key == '5') postGlitch.setFx(OFXPOSTGLITCH_TWIST            , true);
+    if (key == '6') postGlitch.setFx(OFXPOSTGLITCH_OUTLINE        , true);
+    if (key == '7') postGlitch.setFx(OFXPOSTGLITCH_NOISE            , true);
+    if (key == '8') postGlitch.setFx(OFXPOSTGLITCH_SLITSCAN        , true);
+    if (key == '9') postGlitch.setFx(OFXPOSTGLITCH_SWELL            , true);
+    if (key == '0') postGlitch.setFx(OFXPOSTGLITCH_INVERT            , true);
+
 }
 
 void ofApp::newMidiMessage(ofxMidiMessage& eventArgs){
@@ -359,7 +339,17 @@ void ofApp::captureScreen(){
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-    
+    if (key == '1') postGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE    , false);
+    if (key == '2') postGlitch.setFx(OFXPOSTGLITCH_GLOW            , false);
+    if (key == '3') postGlitch.setFx(OFXPOSTGLITCH_SHAKER            , false);
+    if (key == '4') postGlitch.setFx(OFXPOSTGLITCH_CUTSLIDER        , false);
+    if (key == '5') postGlitch.setFx(OFXPOSTGLITCH_TWIST            , false);
+    if (key == '6') postGlitch.setFx(OFXPOSTGLITCH_OUTLINE        , false);
+    if (key == '7') postGlitch.setFx(OFXPOSTGLITCH_NOISE            , false);
+    if (key == '8') postGlitch.setFx(OFXPOSTGLITCH_SLITSCAN        , false);
+    if (key == '9') postGlitch.setFx(OFXPOSTGLITCH_SWELL            , false);
+    if (key == '0') postGlitch.setFx(OFXPOSTGLITCH_INVERT            , false);
+
 }
 
 //--------------------------------------------------------------

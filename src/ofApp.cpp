@@ -3,6 +3,7 @@
 static const int TRIANGLE_SIZE = 10;
 static const int MESH_WIDTH = 100;
 static const int MESH_HEIGHT = 250;
+static const int FBO_SAMPLES = 4;
 float startTime = 0;
 float waveValue = 0;
 float waveStartTime = 0.0;
@@ -32,9 +33,12 @@ void ofApp::setup(){
     // shaders
     floorShader.load("floorShaderVert.c", "floorShaderFrag.c");
     spaceShader.load("spaceShaderVert.c", "spaceShaderFrag.c");
+    dummyShader.load("dummyShaderVert.c", "dummyShaderFrag.c");
     dotShader.load("dotShaderVert.c", "dotShaderFrag.c");
+    // !!!!!!!!this line!!!!!!!
     ofDisableArbTex();
     ofLoadImage(dotsTexture, "dot.png");
+    ofEnableArbTex();
     
     // init objects
     initMeshes(MESH_WIDTH, MESH_HEIGHT);
@@ -42,10 +46,15 @@ void ofApp::setup(){
     
     
     
-    // post processing
-    post.init(ofGetWidth(), ofGetHeight(), 4);
-    post.createPass<BloomPass>()->setEnabled(true);
-    post.setFlip(false);
+//    // post processing
+//    post.init(ofGetWidth(), ofGetHeight(), FBO_SAMPLES);
+//    post.createPass<BloomPass>()->setEnabled(true);
+//    post.setFlip(false);
+    
+    
+    fbo.allocate(ofGetWidth(), ofGetHeight());//, GL_DEPTH_COMPONENT24, FBO_SAMPLES);
+    //fbo2.allocate(ofGetWidth(), ofGetHeight());//, GL_DEPTH_COMPONENT24, FBO_SAMPLES);
+    postGlitch.setup(&fbo);
     
     startTime = ofGetElapsedTimef();
 }
@@ -70,26 +79,31 @@ void ofApp::update(){
         jitterValue -= ofGetElapsedTimef() - jitterStartTime;
     }
     
+//    postGlitch.setFx(OFXPOSTGLITCH_NOISE,true);
+//    postGlitch.setFx(OFXPOSTGLITCH_CUTSLIDER,true);
+    postGlitch.setFx(OFXPOSTGLITCH_GLOW,true);
+    
     //    cam.enableInertia();
     cam.move(0, 0, -1 * (ofGetElapsedTimef()/5.0f));
     //        cam.rotateDeg(ofNoise(ofGetElapsedTimef()) - 0.5, 0, 0, 10);
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
     // setup gl state
     ofEnableDepthTest();
-    //light.enable();
     
-    post.begin(cam);
+    fbo.begin();
+    cam.begin();
     ofClear(0,0,0,255);
     ofSetLineWidth(1);
-    
+
     // matrix stuff
     ofPushMatrix();
     ofTranslate(-(MESH_WIDTH*TRIANGLE_SIZE)/2, -ofGetHeight()/2);
     ofRotateDeg(90, -1, 0, 0);
-    
+
     // draw stuff
     //floor
     floorShader.begin();
@@ -104,13 +118,13 @@ void ofApp::draw(){
         }
     }
     floorShader.end();
-    
+
     //space
     spaceShader.begin();
     spaceShader.setUniform1f("value", jitterValue);
     spaceMesh.draw();
     spaceShader.end();
-    
+
     glDepthMask(GL_FALSE);
     ofSetColor(255, 100, 90);
     ofEnableBlendMode(OF_BLENDMODE_ADD);
@@ -123,10 +137,37 @@ void ofApp::draw(){
     ofDisablePointSprites();
     ofDisableBlendMode();
     glDepthMask(GL_TRUE);
+    ofPopMatrix();
+    cam.end();
+    fbo.end();
+    
+
+//    fbo2.begin();
+//    ofClear(0, 0,0, 255);
+//    dummyShader.begin();
+//    fbo.draw(0,0);
+//    dummyShader.end();
+//    fbo2.end();
+
+    postGlitch.generateFx();
+    ofSetColor(255);
+    fbo.draw(0,0);
     
     // end
-    ofPopMatrix();
-    post.end();
+//    post.begin();
+    //    postGlitch.generateFx();
+    //    ofSetColor(255);
+    //    fbo.draw(0,0);
+//    post.end();
+    
+//    fbo.begin();
+//    //ofClear(0, 0, 0, 255);
+//    post.draw();
+//    fbo.end();
+//
+//    postGlitch.generateFx();
+//    ofSetColor(255);
+//    fbo.draw(0,0);
     
     
     // capture the image if recording is started

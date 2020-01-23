@@ -4,6 +4,7 @@
 #include "ofxMidi.h"
 #include "ofxImageSequenceRecorder.h"
 #include "ofxPostProcessing.h"
+#include "ofxPostGlitch.h"
 
 class ofApp : public ofBaseApp, public ofxMidiListener {
     
@@ -66,7 +67,12 @@ private:
     ofShader floorShader;
     ofShader spaceShader;
     ofShader dotShader;
+    ofShader dummyShader;
     
+    // post procesing
     ofxPostProcessing post;
-
+    ofxPostGlitch postGlitch;
+    ofFbo fbo;
+    ofFbo fbo2;
+    
 };

@@ -15,7 +15,6 @@ int trianglesVectorSize = 5;
 int pointsCount = 50;
 
 
-//--------------------------------------------------------------
 void ofApp::setup(){
     //ofsetup
     ofSetFrameRate(30);
@@ -55,7 +54,6 @@ void ofApp::exit(){
     recorder.stopThread();
 }
 
-//--------------------------------------------------------------
 void ofApp::update(){
     // show the framerate on window title
     std::stringstream strm;
@@ -74,13 +72,12 @@ void ofApp::update(){
 //    postGlitch.setFx(OFXPOSTGLITCH_CUTSLIDER,true);
 //    postGlitch.setFx(OFXPOSTGLITCH_GLOW,true);
     
-    //    cam.enableInertia();
-    cam.move(0, 0, -1 * (ofGetElapsedTimef()/5.0f));
-    //        cam.rotateDeg(ofNoise(ofGetElapsedTimef()) - 0.5, 0, 0, 10);
+    cam.enableInertia();
+    //cam.move(0, 0, -1 * (ofGetElapsedTimef()/5.0f));
+    cam.rotateDeg(ofNoise(ofGetElapsedTimef()) - 0.5, 0, 0, 10);
     
 }
 
-//--------------------------------------------------------------
 void ofApp::draw(){
     ofEnableDepthTest();
     
@@ -146,10 +143,13 @@ void ofApp::draw(){
         recorder.addFrame(screenCapture);
     }
 }
-
 void ofApp::initMeshes(int width, int height) {
-    
-    // space mesh
+    initSpaceMesh();
+    initFloorMesh(height, width);
+    initDotsMesh();
+}
+
+void ofApp::initSpaceMesh() {
     spaceImage.load("space3.jpg");
     spaceImage.resize(MESH_WIDTH*2, MESH_HEIGHT*2);
     spaceMesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
@@ -182,8 +182,9 @@ void ofApp::initMeshes(int width, int height) {
             }
         }
     }
-    
-    
+}
+
+void ofApp::initFloorMesh(int height, int width) {
     vector<int> triangleMeshesIndexes;
     // triangles and floor meshes
     for (int i = 0; i < trianglesVectorSize; i++){
@@ -268,12 +269,15 @@ void ofApp::initMeshes(int width, int height) {
             }
         }
     }
-    
+}
+
+void ofApp::initDotsMesh() {
     dotsMesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_POINTS);
     for (int i = 0; i < pointsCount; i++){
         dotsMesh.addVertex(ofPoint(500 + ofRandom(200), 500 + ofRandom(200), 500 + ofRandom(200)));
     }
 }
+
 
 void ofApp::initSphere() {
     sphere = ofSpherePrimitive(100, 50).getMesh();

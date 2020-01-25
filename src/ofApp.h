@@ -14,8 +14,7 @@ public:
     void draw();
     
     void initMeshes(int width, int height);
-    void initSphere();
-    
+
     // recording
     void toggleRecording();
     void captureScreen();
@@ -41,6 +40,12 @@ public:
     void triggerTriangles(int i);
     
 private:
+    // init different meshes
+    void initSpaceMesh();
+    void initFloorMesh(int height, int width);
+    void initDotsMesh();
+    void initSphere();
+    
     // midi
     ofxMidiIn midiIn;
     

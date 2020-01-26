@@ -3,7 +3,7 @@
 static const int TRIANGLE_SIZE = 10;
 static const int MESH_WIDTH = 100;
 static const int MESH_HEIGHT = 250;
-static const int FBO_SAMPLES = 4;
+static const int FBO_SAMPLES = 0;
 float startTime = 0;
 float waveValue = 0;
 float waveStartTime = 0.0;
@@ -13,6 +13,8 @@ float intensityThreshold = 130.0;
 float connectionDistance = 100;
 int trianglesVectorSize = 5;
 int pointsCount = 50;
+int maxLinesCount = 1000;
+int lineSpeed = 5;
 
 
 void ofApp::setup(){
@@ -41,9 +43,8 @@ void ofApp::setup(){
     
     // init objects
     initMeshes(MESH_WIDTH, MESH_HEIGHT);
-    initSphere();
     
-    fbo.allocate(ofGetWidth(), ofGetHeight());//, GL_DEPTH_COMPONENT24, FBO_SAMPLES);
+    fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA, FBO_SAMPLES);
     postGlitch.setup(&fbo);
     
     startTime = ofGetElapsedTimef();
@@ -72,9 +73,11 @@ void ofApp::update(){
 //    postGlitch.setFx(OFXPOSTGLITCH_CUTSLIDER,true);
 //    postGlitch.setFx(OFXPOSTGLITCH_GLOW,true);
     
-    cam.enableInertia();
-    //cam.move(0, 0, -1 * (ofGetElapsedTimef()/5.0f));
-    cam.rotateDeg(ofNoise(ofGetElapsedTimef()) - 0.5, 0, 0, 10);
+    //cam.enableInertia();
+    cam.move(0, 0, -1 * (ofGetElapsedTimef()/3.0f));
+    //cam.rotateDeg(ofNoise(ofGetElapsedTimef()) - 0.5, 0, 0, 10);
+    
+    updatesLines();
     
 }
 
@@ -110,6 +113,12 @@ void ofApp::draw(){
     spaceShader.setUniform1f("value", jitterValue);
     spaceMesh.draw();
     spaceShader.end();
+    
+    // draw lines
+    ofSetLineWidth(5);
+    ofSetColor(ofColor::red);
+    linesMesh.draw();
+    ofSetLineWidth(1);
 
     // draw dots
     glDepthMask(GL_FALSE);
@@ -144,12 +153,16 @@ void ofApp::draw(){
     }
 }
 void ofApp::initMeshes(int width, int height) {
-    initSpaceMesh();
-    initFloorMesh(height, width);
-    initDotsMesh();
+    createSpaceMesh();
+    createFloorMesh(height, width);
+    createDotsMesh();
+    
+    //lines mesh
+    lineDirection = ofVec3f(0, lineSpeed, 0);
+    lastLinePoint = ofPoint(200, 0, 200);
+    linesMesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINE_STRIP);
 }
-
-void ofApp::initSpaceMesh() {
+void ofApp::createSpaceMesh() {
     spaceImage.load("space3.jpg");
     spaceImage.resize(MESH_WIDTH*2, MESH_HEIGHT*2);
     spaceMesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
@@ -184,7 +197,7 @@ void ofApp::initSpaceMesh() {
     }
 }
 
-void ofApp::initFloorMesh(int height, int width) {
+void ofApp::createFloorMesh(int height, int width, int triangleSize) {
     vector<int> triangleMeshesIndexes;
     // triangles and floor meshes
     for (int i = 0; i < trianglesVectorSize; i++){
@@ -200,27 +213,27 @@ void ofApp::initFloorMesh(int height, int width) {
     int index = 0;
     for (int i = 0; i < width; i++){
         for (int j = 0; j < height; j++){
-            int pan = j % 2 == 0 ? 0 : TRIANGLE_SIZE / 2;
+            int pan = j % 2 == 0 ? 0 : triangleSize / 2;
             
             int x, y, z = 0;
             
-            x = i * TRIANGLE_SIZE + pan;
-            y = j * TRIANGLE_SIZE;
+            x = i * triangleSize + pan;
+            y = j * triangleSize;
             z = (ofNoise(x, y) - 0.5) * 20;
             ofPoint point1 = ofPoint(x, y, z);
             
-            x = (i + 0.5 ) * TRIANGLE_SIZE + pan;
-            y = (j + 1) * TRIANGLE_SIZE;
+            x = (i + 0.5 ) * triangleSize + pan;
+            y = (j + 1) * triangleSize;
             z = (ofNoise(x, y) - 0.5) * 20;
             ofPoint point2 = ofPoint(x, y, z);
             
-            x = (i + 1) * TRIANGLE_SIZE + pan;
+            x = (i + 1) * triangleSize + pan;
             y = j * TRIANGLE_SIZE;
             z = (ofNoise(x, y) - 0.5) * 20;
             ofPoint point3 = ofPoint(x, y, z);
             
-            x = (i + 1.5) * TRIANGLE_SIZE + pan;
-            y = (j + 1) * TRIANGLE_SIZE;
+            x = (i + 1.5) * triangleSize + pan;
+            y = (j + 1) * triangleSize;
             z = (ofNoise(x, y) - 0.5) * 20;
             ofPoint point4 = ofPoint(x, y, z);
             
@@ -269,21 +282,16 @@ void ofApp::initFloorMesh(int height, int width) {
             }
         }
     }
+    
+    return floorMesh;
 }
 
-void ofApp::initDotsMesh() {
+void ofApp::createDotsMesh() {
     dotsMesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_POINTS);
     for (int i = 0; i < pointsCount; i++){
         dotsMesh.addVertex(ofPoint(500 + ofRandom(200), 500 + ofRandom(200), 500 + ofRandom(200)));
     }
 }
-
-
-void ofApp::initSphere() {
-    sphere = ofSpherePrimitive(100, 50).getMesh();
-}
-
-
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
@@ -314,6 +322,9 @@ void ofApp::keyPressed(int key) {
             break;
         case 'g':
             triggerTriangles(4);
+            break;
+        case 'z':
+            changeLineDirection();
             break;
         default:
             break;
@@ -417,4 +428,36 @@ void ofApp::startJitter(){
 
 void ofApp::triggerTriangles(int i){
     trianglesMeshesActivation[i] = trianglesMeshesActivation[i] ? false : true;
+}
+
+void ofApp::changeLineDirection(){
+    float x = rand() % 3 - 1;
+    float y = 1;
+    float z = rand() % 3 - 1;
+    lineDirection = ofVec3f(x, y, z);
+    //lineDirection.normalize();
+    lineDirection *= lineSpeed;
+    lineDirection.y = lineSpeed;
+    
+    ofLog(ofLogLevel::OF_LOG_NOTICE, ofToString(lineDirection));
+}
+
+void ofApp::updatesLines() {
+    if (lastLinePoint.x + lineDirection.x < 0 || lastLinePoint.x + lineDirection.x > MESH_WIDTH * TRIANGLE_SIZE) {
+        lineDirection.x = -lineDirection.x;
+    }
+    if (lastLinePoint.z + lineDirection.z > 500 || lastLinePoint.z + lineDirection.z < -500) {
+        lineDirection.z = -lineDirection.z;
+    }
+    
+    int x = lastLinePoint.x + lineDirection.x;
+    int y = lastLinePoint.y + lineDirection.y;
+    int z = lastLinePoint.z + lineDirection.z;
+    
+    ofPoint newPoint = ofPoint(x, y, z);
+    lastLinePoint = newPoint;
+    linesMesh.addVertex(newPoint);
+    if (linesMesh.getVertices().size() > maxLinesCount) {
+        linesMesh.getVertices().erase(linesMesh.getVertices().begin());
+    }
 }

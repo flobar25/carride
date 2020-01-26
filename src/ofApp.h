@@ -34,17 +34,21 @@ public:
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
     
-    //events
+    // events
     void startWave();
     void startJitter();
     void triggerTriangles(int i);
+    void changeLineDirection();
+    
+    // updates
+    void updatesLines();
     
 private:
     // init different meshes
-    void initSpaceMesh();
-    void initFloorMesh(int height, int width);
-    void initDotsMesh();
-    void initSphere();
+    ofMesh createSpaceMesh();
+    ofMesh createFloorMesh(int height, int width);
+    ofMesh createDotsMesh();
+    ofMesh createLineMesh();
     
     // midi
     ofxMidiIn midiIn;
@@ -66,6 +70,10 @@ private:
     ofImage spaceImage;
     ofMesh dotsMesh;
     ofTexture dotsTexture;
+    
+    ofMesh linesMesh;
+    ofVec3f lineDirection;
+    ofPoint lastLinePoint;
     
     //shaders
     ofShader floorShader;

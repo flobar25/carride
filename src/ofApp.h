@@ -4,17 +4,21 @@
 #include "ofxMidi.h"
 #include "ofxImageSequenceRecorder.h"
 #include "ofxPostGlitch.h"
+#include "Floor.h"
+#include "Space.h"
+#include "Line.h"
+#include "Dots.h"
 
 class ofApp : public ofBaseApp, public ofxMidiListener {
     
 public:
+    ofApp();
+    ~ofApp();
     void setup();
     void exit();
     void update();
     void draw();
     
-    void initMeshes(int width, int height);
-
     // recording
     void toggleRecording();
     void captureScreen();
@@ -33,22 +37,14 @@ public:
     void windowResized(int w, int h);
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
-    
-    // events
-    void startWave();
-    void startJitter();
-    void triggerTriangles(int i);
-    void changeLineDirection();
-    
-    // updates
-    void updatesLines();
+
     
 private:
-    // init different meshes
-    ofMesh createSpaceMesh();
-    ofMesh createFloorMesh(int height, int width);
-    ofMesh createDotsMesh();
-    ofMesh createLineMesh();
+//    Space* createSpace(int height, int width, int trianglesSize, string imagePath);
+//    Floor createFloor(int height, int width, int trianglesSize, vector<ofColor> colors);
+    Line createLine(int height, int width, int trianglesSize);
+    Dots createDots(int height, int width, int trianglesSize);
+    
     
     // midi
     ofxMidiIn midiIn;
@@ -58,22 +54,14 @@ private:
     
     // recording
     ofxImageSequenceRecorder recorder;
-    Boolean recording;
+    bool recording;
     ofImage screenCapture;
     
     // elements of the visual
-    ofMesh floorMesh;
-    vector<ofMesh> trianglesMeshes;
-    vector<bool> trianglesMeshesActivation;
-    ofMesh sphere;
-    ofMesh spaceMesh;
-    ofImage spaceImage;
-    ofMesh dotsMesh;
-    ofTexture dotsTexture;
-    
-    ofMesh linesMesh;
-    ofVec3f lineDirection;
-    ofPoint lastLinePoint;
+    Floor* floor;
+    Space* space;
+//    Dots dots;
+//    Line line;
     
     //shaders
     ofShader floorShader;
@@ -84,5 +72,4 @@ private:
     // post procesing
     ofxPostGlitch postGlitch;
     ofFbo fbo;
-    
 };

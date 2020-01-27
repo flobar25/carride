@@ -6,7 +6,7 @@
 #include "ofxPostGlitch.h"
 #include "Floor.h"
 #include "Space.h"
-#include "Line.h"
+#include "Ribbon.h"
 #include "Dots.h"
 
 class ofApp : public ofBaseApp, public ofxMidiListener {
@@ -42,8 +42,8 @@ public:
 private:
 //    Space* createSpace(int height, int width, int trianglesSize, string imagePath);
 //    Floor createFloor(int height, int width, int trianglesSize, vector<ofColor> colors);
-    Line createLine(int height, int width, int trianglesSize);
-    Dots createDots(int height, int width, int trianglesSize);
+//    Line createLine(int height, int width, int trianglesSize);
+//    Dots createDots(int height, int width, int trianglesSize);
     
     
     // midi
@@ -60,8 +60,8 @@ private:
     // elements of the visual
     Floor* floor;
     Space* space;
-//    Dots dots;
-//    Line line;
+    Dots* dots;
+    Ribbon* ribbon;
     
     //shaders
     ofShader floorShader;

@@ -1,28 +1,29 @@
-#include "Line.h"
+#include "Ribbon.h"
 
-Line::Line(ofPoint& startingPoint, ofVec3f& startingDirection, float speed, int xb, int zb, int mp){
-    lineMesh.addVertex(startingPoint);
+Ribbon::Ribbon(ofPoint startingPoint, ofVec3f startingDirection, float speed, int xb, int zb, int mp){
+    ribbonMesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINE_STRIP);
+    ribbonMesh.addVertex(startingPoint);
     direction = startingDirection;
     lastPoint = startingPoint;
-    lineSpeed = speed;
+    ribbonSpeed = speed;
     xBoundary = xb;
     zBoundary = zb;
     maxPointsCount = mp;
 }
 
-void Line::changeDirection(){
+void Ribbon::changeDirection(){
     float x = rand() % 3 - 1;
     float y = 1;
     float z = rand() % 3 - 1;
     direction = ofVec3f(x, y, z);
     //lineDirection.normalize();
-    direction *= lineSpeed;
-    direction.y = lineSpeed;
+    direction *= ribbonSpeed;
+    direction.y = ribbonSpeed;
     
     ofLog(ofLogLevel::OF_LOG_NOTICE, ofToString(direction));
 }
 
-void Line::update() {
+void Ribbon::update() {
     if (lastPoint.x + direction.x < 0 || lastPoint.x + direction.x > xBoundary) {
         direction.x = direction.x;
     }
@@ -36,8 +37,16 @@ void Line::update() {
     
     ofPoint newPoint = ofPoint(x, y, z);
     lastPoint = newPoint;
-    lineMesh.addVertex(newPoint);
-    if (lineMesh.getVertices().size() > maxPointsCount) {
-        lineMesh.getVertices().erase(lineMesh.getVertices().begin());
+    ribbonMesh.addVertex(newPoint);
+    if (ribbonMesh.getVertices().size() > maxPointsCount) {
+        ribbonMesh.getVertices().erase(ribbonMesh.getVertices().begin());
     }
+}
+
+void Ribbon::draw() {
+    // draw lines
+    ofSetLineWidth(5);
+    ofSetColor(ofColor::red);
+    ribbonMesh.draw();
+    ofSetLineWidth(1);
 }

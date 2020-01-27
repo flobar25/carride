@@ -1,17 +1,18 @@
 #include <stdio.h>
 #include "ofMain.h"
 
-class Line{
+class Ribbon{
 public:
-    Line(ofPoint& startingPoint, ofVec3f& startingDirection, float speed, int xBoundary, int zBoundary, int maxPointsCount);
+    Ribbon(ofPoint startingPoint, ofVec3f startingDirection, float speed, int xb, int zb, int mp);
     void changeDirection();
     void update();
+    void draw();
     
 private:
-    ofMesh lineMesh;
+    ofMesh ribbonMesh;
     ofPoint lastPoint;
     ofVec3f direction;
-    float lineSpeed;
+    float ribbonSpeed;
     int xBoundary;
     int zBoundary;
     int maxPointsCount;

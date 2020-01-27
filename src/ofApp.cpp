@@ -4,13 +4,12 @@ static const int TRIANGLE_SIZE = 10;
 static const int MESH_WIDTH = 100;
 static const int MESH_HEIGHT = 250;
 
-int pointsCount = 50;
-int maxLinesCount = 1000;
-int lineSpeed = 5;
 
 ofApp::ofApp() {
     space = new Space(MESH_HEIGHT, MESH_WIDTH, TRIANGLE_SIZE, 130.0, 100, "space3.jpg");
     floor = new Floor(MESH_HEIGHT, MESH_WIDTH, TRIANGLE_SIZE, 5, space->getSpaceMesh().getColors());
+    dots = new Dots(50, 200, ofPoint(500, 500, 500), "dot.png");
+    ribbon = new Ribbon(ofPoint(200, 0, 200), ofVec3f(0, 5, 0), 5.0, MESH_WIDTH * TRIANGLE_SIZE, 200, 500);
     
     postGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, false);
     postGlitch.setFx(OFXPOSTGLITCH_GLOW, false);
@@ -22,20 +21,14 @@ ofApp::ofApp() {
     postGlitch.setFx(OFXPOSTGLITCH_SLITSCAN, false);
     postGlitch.setFx(OFXPOSTGLITCH_SWELL, false);
     postGlitch.setFx(OFXPOSTGLITCH_INVERT, false);
-    //    dots = createDotsMesh
-    //    floor = createFloorMesh(height, width, TRIANGLE_SIZE);
-    //
-    //
-    //
-    //    //lines mesh
-    //    lineDirection = ofVec3f(0, lineSpeed, 0);
-    //    lastLinePoint = ofPoint(200, 0, 200);
-    //    linesMesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINE_STRIP);
+    recording = false;
 }
 
 ofApp::~ofApp() {
     delete space;
     delete floor;
+    delete dots;
+    delete ribbon;
 }
 
 void ofApp::setup(){
@@ -74,10 +67,10 @@ void ofApp::update(){
     ofSetWindowTitle(strm.str());
     
     //cam.enableInertia();
-    //cam.move(0, 0, -1 * (ofGetElapsedTimef()/3.0f));
+    cam.move(0, 0, -1 * (ofGetElapsedTimef()/3.0f));
     //cam.rotateDeg(ofNoise(ofGetElapsedTimef()) - 0.5, 0, 0, 10);
     
-//    line.update();
+    ribbon->update();
     floor->update();
     space->update();
 }
@@ -109,26 +102,20 @@ void ofApp::draw(){
     space->draw();
     spaceShader.end();
     
-    //
-    //    // draw lines
-    //    ofSetLineWidth(5);
-    //    ofSetColor(ofColor::red);
-    //    linesMesh.draw();
-    //    ofSetLineWidth(1);
-    //
-    //    // draw dots
-    //    glDepthMask(GL_FALSE);
-    //    ofSetColor(255, 100, 90);
-    //    ofEnableBlendMode(OF_BLENDMODE_ADD);
-    //    ofEnablePointSprites();
-    //    dotShader.begin();
-    //    dotsTexture.bind();
-    //    dotsMesh.draw();
-    //    dotsTexture.unbind();
-    //    dotShader.end();
-    //    ofDisablePointSprites();
-    //    ofDisableBlendMode();
-    //    glDepthMask(GL_TRUE);
+    // draw lines
+    ribbon->draw();
+
+    // draw dots
+    glDepthMask(GL_FALSE);
+    ofSetColor(255, 100, 90);
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
+    ofEnablePointSprites();
+    dotShader.begin();
+    dots->draw();
+    dotShader.end();
+    ofDisablePointSprites();
+    ofDisableBlendMode();
+    glDepthMask(GL_TRUE);
     
     // close stuff
     ofPopMatrix();
@@ -313,7 +300,7 @@ void ofApp::keyPressed(int key) {
             floor->toggleTriangles(4);
             break;
         case 'z':
-//            line.changeDirection();
+            ribbon->changeDirection();
             break;
         default:
             break;

@@ -12,3 +12,9 @@ Dots::Dots(int dotsCount, float distance, ofPoint dotsCenter, string texturePath
     ofEnableArbTex();
     
 }
+
+void Dots::draw() {
+    dotsTexture.bind();
+    dotsMesh.draw();
+    dotsTexture.unbind();
+}

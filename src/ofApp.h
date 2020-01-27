@@ -26,6 +26,7 @@ public:
     // MIDI
     void newMidiMessage(ofxMidiMessage& eventArgs);
     
+    // events
     void keyPressed(int key);
     void keyReleased(int key);
     void mouseMoved(int x, int y );
@@ -40,12 +41,6 @@ public:
 
     
 private:
-//    Space* createSpace(int height, int width, int trianglesSize, string imagePath);
-//    Floor createFloor(int height, int width, int trianglesSize, vector<ofColor> colors);
-//    Line createLine(int height, int width, int trianglesSize);
-//    Dots createDots(int height, int width, int trianglesSize);
-    
-    
     // midi
     ofxMidiIn midiIn;
     

@@ -1,14 +1,16 @@
 #include "ofApp.h"
 
 static const int TRIANGLE_SIZE = 10;
-static const int MESH_WIDTH = 100;
+static const int MESH_WIDTH = 250;
 static const int MESH_HEIGHT = 250;
 
 
 ofApp::ofApp() {
     space = new Space(MESH_HEIGHT, MESH_WIDTH, TRIANGLE_SIZE, 130.0, 100, "space3.jpg");
     floor = new Floor(MESH_HEIGHT, MESH_WIDTH, TRIANGLE_SIZE, 5, space->getSpaceMesh().getColors());
-    dots = new Dots(50, 200, ofPoint(500, 500, 500), "dot.png");
+    dots.push_back(new Dots(50, 200, ofPoint(500, 500, 500), "dot.png"));
+    dots.push_back(new Dots(50, 200, ofPoint(0, 500, 500), "dot.png"));
+
     ribbons.push_back(new Ribbon(ofPoint(200, 0, 200), ofVec3f(0, 5, 0), 5.0, MESH_WIDTH * TRIANGLE_SIZE, 200, 500));
     ribbons.push_back(new Ribbon(ofPoint(400, 0, 100), ofVec3f(0, 5, 0), 5.0, MESH_WIDTH * TRIANGLE_SIZE, 200, 500));
     ribbons.push_back(new Ribbon(ofPoint(300, 0, 150), ofVec3f(0, 5, 0), 5.0, MESH_WIDTH * TRIANGLE_SIZE, 200, 500));
@@ -29,7 +31,10 @@ ofApp::ofApp() {
 ofApp::~ofApp() {
     delete space;
     delete floor;
-    delete dots;
+
+    for (auto it = dots.begin(); it < dots.end(); it++) {
+        delete *it;
+    }
     for (auto it = ribbons.begin(); it < ribbons.end(); it++) {
         delete *it;
     }
@@ -119,7 +124,9 @@ void ofApp::draw(){
     ofEnableBlendMode(OF_BLENDMODE_ADD);
     ofEnablePointSprites();
     dotShader.begin();
-    dots->draw();
+    for (auto it = dots.begin(); it < dots.end(); it++) {
+        (*it)->draw();
+    }
     dotShader.end();
     ofDisablePointSprites();
     ofDisableBlendMode();

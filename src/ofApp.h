@@ -55,7 +55,7 @@ private:
     // elements of the visual
     Floor* floor;
     Space* space;
-    Dots* dots;
+    vector<Dots*> dots;
     vector<Ribbon*> ribbons;
     
     //shaders

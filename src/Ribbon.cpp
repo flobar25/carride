@@ -9,38 +9,42 @@ Ribbon::Ribbon(ofPoint startingPoint, ofVec3f startingDirection, float speed, in
     xBoundary = xb;
     zBoundary = zb;
     maxPointsCount = mp;
+    ribbonMesh.addVertex(lastPoint);
+}
+
+void Ribbon::changeDirection(float x, float y, float z) {
+    direction = ofVec3f(x, y, z);
+    //lineDirection.normalize();
+    
+    ofPoint newPoint = ofPoint(lastPoint.x, lastPoint.y, lastPoint.z);
+    lastPoint = newPoint;
+    ribbonMesh.addVertex(newPoint);
+    
+    if (ribbonMesh.getVertices().size() > maxPointsCount) {
+        ribbonMesh.getVertices().erase(ribbonMesh.getVertices().begin());
+    }
 }
 
 void Ribbon::changeDirection(){
-    float x = rand() % 3 - 1;
-    float y = 1;
-    float z = rand() % 3 - 1;
-    direction = ofVec3f(x, y, z);
-    //lineDirection.normalize();
-    direction *= ribbonSpeed;
-    direction.y = ribbonSpeed;
-    
-    ofLog(ofLogLevel::OF_LOG_NOTICE, ofToString(direction));
+    float x = (rand() % 3 - 1) * ribbonSpeed;
+    float y = ribbonSpeed;
+    float z = (rand() % 3 - 1) * ribbonSpeed;
+    changeDirection(x, y, z);
 }
 
 void Ribbon::update() {
     if (lastPoint.x + direction.x < 0 || lastPoint.x + direction.x > xBoundary) {
-        direction.x = direction.x;
+        changeDirection(-direction.x, direction.y, direction.z);
     }
     if (lastPoint.z + direction.z > zBoundary || lastPoint.z + direction.z < -zBoundary) {
-        direction.z = -direction.z;
+        changeDirection(direction.x, direction.y, -direction.z);
     }
     
-    int x = lastPoint.x + direction.x;
-    int y = lastPoint.y + direction.y;
-    int z = lastPoint.z + direction.z;
-    
-    ofPoint newPoint = ofPoint(x, y, z);
-    lastPoint = newPoint;
-    ribbonMesh.addVertex(newPoint);
-    if (ribbonMesh.getVertices().size() > maxPointsCount) {
-        ribbonMesh.getVertices().erase(ribbonMesh.getVertices().begin());
-    }
+    lastPoint.x = lastPoint.x + direction.x;
+    lastPoint.y = lastPoint.y + direction.y;
+    lastPoint.z = lastPoint.z + direction.z;
+        
+    ribbonMesh.setVertex(ribbonMesh.getNumVertices() - 1, lastPoint);
 }
 
 void Ribbon::draw() {

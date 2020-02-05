@@ -9,7 +9,9 @@ ofApp::ofApp() {
     space = new Space(MESH_HEIGHT, MESH_WIDTH, TRIANGLE_SIZE, 130.0, 100, "space3.jpg");
     floor = new Floor(MESH_HEIGHT, MESH_WIDTH, TRIANGLE_SIZE, 5, space->getSpaceMesh().getColors());
     dots = new Dots(50, 200, ofPoint(500, 500, 500), "dot.png");
-    ribbon = new Ribbon(ofPoint(200, 0, 200), ofVec3f(0, 5, 0), 5.0, MESH_WIDTH * TRIANGLE_SIZE, 200, 500);
+    ribbons.push_back(new Ribbon(ofPoint(200, 0, 200), ofVec3f(0, 5, 0), 5.0, MESH_WIDTH * TRIANGLE_SIZE, 200, 500));
+    ribbons.push_back(new Ribbon(ofPoint(400, 0, 100), ofVec3f(0, 5, 0), 5.0, MESH_WIDTH * TRIANGLE_SIZE, 200, 500));
+    ribbons.push_back(new Ribbon(ofPoint(300, 0, 150), ofVec3f(0, 5, 0), 5.0, MESH_WIDTH * TRIANGLE_SIZE, 200, 500));
     
     postGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, false);
     postGlitch.setFx(OFXPOSTGLITCH_GLOW, false);
@@ -28,7 +30,9 @@ ofApp::~ofApp() {
     delete space;
     delete floor;
     delete dots;
-    delete ribbon;
+    for (auto it = ribbons.begin(); it < ribbons.end(); it++) {
+        delete *it;
+    }
 }
 
 void ofApp::setup(){
@@ -70,7 +74,9 @@ void ofApp::update(){
     cam.move(0, 0, -1 * (ofGetElapsedTimef()/3.0f));
     //cam.rotateDeg(ofNoise(ofGetElapsedTimef()) - 0.5, 0, 0, 10);
     
-    ribbon->update();
+    for (vector<Ribbon*>::iterator it = ribbons.begin(); it < ribbons.end(); it++) {
+        (*it)->update();
+    }
     floor->update();
     space->update();
 }
@@ -103,7 +109,9 @@ void ofApp::draw(){
     spaceShader.end();
     
     // draw lines
-    ribbon->draw();
+    for (auto it = ribbons.begin(); it < ribbons.end(); it++) {
+        (*it)->draw();
+    }
 
     // draw dots
     glDepthMask(GL_FALSE);
@@ -168,7 +176,9 @@ void ofApp::keyPressed(int key) {
             floor->toggleTriangles(4);
             break;
         case 'z':
-            ribbon->changeDirection();
+            for (auto it = ribbons.begin(); it < ribbons.end(); it++) {
+                (*it)->changeDirection();
+            }
             break;
         default:
             break;

@@ -56,7 +56,7 @@ private:
     Floor* floor;
     Space* space;
     Dots* dots;
-    Ribbon* ribbon;
+    vector<Ribbon*> ribbons;
     
     //shaders
     ofShader floorShader;

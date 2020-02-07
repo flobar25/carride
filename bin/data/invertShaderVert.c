@@ -3,25 +3,21 @@
 #extension GL_EXT_gpu_shader4: enable
 
 uniform float value = 0.0;
-uniform float cameraZ = 0;
-uniform int meshHeight = 0;
+uniform float elapsedTime = 0.0;
+
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
 
 void main() {
     vec3 v = gl_Vertex.xyz;
-    
-    if (v.z > 4.0) {
-        v.z = v.z + value *10;
-    }
-    if (v.z < -4.0) {
-        v.z = v.z - value *10;
+    if (value > 0){
+            v.z = v.z + sin(value + 10 * rand(v.xy)) * 2;
+            v.y = v.y + sin(value * 17 + 10 * rand(v.xy)) * 2;
+            v.x = v.x + sin(value * 11 + 10 * rand(v.xy)) * 2;
     }
     
     v.z = -v.z;
-    
-//    if (v.y < -cameraZ){
-//        //v.y += meshHeight * (1 + (-cameraZ / meshHeight));
-//        v.y += 2500;
-//    }
     
     vec4 posHomog = vec4(v, 1.0);
     gl_Position = gl_ModelViewProjectionMatrix * posHomog;
@@ -29,3 +25,4 @@ void main() {
     gl_TexCoord[0] = gl_MultiTexCoord0;
     gl_FrontColor = gl_Color;
 }
+

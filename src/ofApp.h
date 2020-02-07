@@ -63,6 +63,7 @@ private:
     ofShader spaceShader;
     ofShader dotShader;
     ofShader dummyShader;
+    ofShader invertShader;
     
     // post procesing
     ofxPostGlitch postGlitch;

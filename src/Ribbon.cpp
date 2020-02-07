@@ -49,8 +49,10 @@ void Ribbon::update() {
 
 void Ribbon::draw() {
     // draw lines
+    ofEnableAlphaBlending();
     ofSetLineWidth(5);
-    ofSetColor(ofColor::red);
+    ofSetColor(ofColor(210, 255, 252, 255));
     ribbonMesh.draw();
     ofSetLineWidth(1);
+    ofDisableAlphaBlending();
 }

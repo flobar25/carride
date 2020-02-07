@@ -59,6 +59,7 @@ void ofApp::setup(){
     spaceShader.load("spaceShaderVert.c", "spaceShaderFrag.c");
     dummyShader.load("dummyShaderVert.c", "dummyShaderFrag.c");
     dotShader.load("dotShaderVert.c", "dotShaderFrag.c");
+    invertShader.load("invertShaderVert.c", "invertShaderFrag.c");
     
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA, 0);
     postGlitch.setup(&fbo);
@@ -112,6 +113,12 @@ void ofApp::draw(){
     spaceShader.setUniform1f("value", space->getJitterValue());
     space->draw();
     spaceShader.end();
+    
+    // draw space
+    invertShader.begin();
+    invertShader.setUniform1f("value", space->getJitterValue());
+    space->draw();
+    invertShader.end();
     
     // draw lines
     for (auto it = ribbons.begin(); it < ribbons.end(); it++) {

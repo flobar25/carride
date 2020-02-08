@@ -47,7 +47,6 @@
 		E4B69E210A3A1BDC003C02F2 /* ofApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E4B69E1E0A3A1BDC003C02F2 /* ofApp.cpp */; };
 		F1EB9E0423DFEC7F005F7F5F /* Ribbon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F1EB9DFB23DFEC7F005F7F5F /* Ribbon.cpp */; };
 		F1EB9E0523DFEC7F005F7F5F /* Dots.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F1EB9DFC23DFEC7F005F7F5F /* Dots.cpp */; };
-		F1EB9E0623DFEC7F005F7F5F /* testApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F1EB9DFF23DFEC7F005F7F5F /* testApp.cpp */; };
 		F1EB9E0723DFEC7F005F7F5F /* Space.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F1EB9E0023DFEC7F005F7F5F /* Space.cpp */; };
 		F1EB9E0823DFEC7F005F7F5F /* Floor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F1EB9E0123DFEC7F005F7F5F /* Floor.cpp */; };
 		F6E7D6C01B3F2E112EB0533D /* ofxPostGlitch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40C409F696FE990F95E1B9D3 /* ofxPostGlitch.cpp */; };
@@ -324,11 +323,9 @@
 		F1EB9DFC23DFEC7F005F7F5F /* Dots.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Dots.cpp; sourceTree = "<group>"; };
 		F1EB9DFD23DFEC7F005F7F5F /* Ribbon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Ribbon.h; sourceTree = "<group>"; };
 		F1EB9DFE23DFEC7F005F7F5F /* Space.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Space.h; sourceTree = "<group>"; };
-		F1EB9DFF23DFEC7F005F7F5F /* testApp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testApp.cpp; sourceTree = "<group>"; };
 		F1EB9E0023DFEC7F005F7F5F /* Space.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Space.cpp; sourceTree = "<group>"; };
 		F1EB9E0123DFEC7F005F7F5F /* Floor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Floor.cpp; sourceTree = "<group>"; };
 		F1EB9E0223DFEC7F005F7F5F /* Floor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Floor.h; sourceTree = "<group>"; };
-		F1EB9E0323DFEC7F005F7F5F /* testApp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = testApp.h; sourceTree = "<group>"; };
 		F5DB1AC24B8010FC3C556AAC /* RenderPass.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = RenderPass.h; path = ../../../addons/ofxPostProcessing/src/RenderPass.h; sourceTree = SOURCE_ROOT; };
 		F634AA6CA2E3C60F3B87B59A /* ofxRtMidiIn.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ofxRtMidiIn.cpp; path = ../../../addons/ofxMidi/src/desktop/ofxRtMidiIn.cpp; sourceTree = SOURCE_ROOT; };
 		F7095C30AC932F9AF9DA8DE4 /* ofxImageSequenceRecorder.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = ofxImageSequenceRecorder.h; path = ../../../addons/ofxImageSequenceRecorder/src/ofxImageSequenceRecorder.h; sourceTree = SOURCE_ROOT; };
@@ -843,8 +840,6 @@
 				F1EB9DFD23DFEC7F005F7F5F /* Ribbon.h */,
 				F1EB9E0023DFEC7F005F7F5F /* Space.cpp */,
 				F1EB9DFE23DFEC7F005F7F5F /* Space.h */,
-				F1EB9DFF23DFEC7F005F7F5F /* testApp.cpp */,
-				F1EB9E0323DFEC7F005F7F5F /* testApp.h */,
 				E4B69E1D0A3A1BDC003C02F2 /* main.cpp */,
 				E4B69E1E0A3A1BDC003C02F2 /* ofApp.cpp */,
 				E4B69E1F0A3A1BDC003C02F2 /* ofApp.h */,
@@ -979,7 +974,6 @@
 				28AFD6FA9B9C885AFD9FF1C7 /* HorizontalTiltShifPass.cpp in Sources */,
 				B59194C82B8D802DA33EC465 /* HsbShiftPass.cpp in Sources */,
 				F1EB9E0423DFEC7F005F7F5F /* Ribbon.cpp in Sources */,
-				F1EB9E0623DFEC7F005F7F5F /* testApp.cpp in Sources */,
 				884CB4D049E35C51E949A565 /* KaleidoscopePass.cpp in Sources */,
 				B1747F12881D899DCA2647FC /* LUTPass.cpp in Sources */,
 				7AB51F1099DC01486D18FAF6 /* LimbDarkeningPass.cpp in Sources */,

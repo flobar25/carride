@@ -26,6 +26,13 @@ public:
     // MIDI
     void newMidiMessage(ofxMidiMessage& eventArgs);
     
+    // cam
+    void setRandomCamPosition();
+    
+    // visual
+    void addRibbon();
+    void addDots();
+    
     // events
     void keyPressed(int key);
     void keyReleased(int key);
@@ -46,6 +53,7 @@ private:
     
     // camera
     ofEasyCam cam;
+    ofVec3f camPosition;
     
     // recording
     ofxImageSequenceRecorder recorder;

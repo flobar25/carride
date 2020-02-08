@@ -3,7 +3,7 @@
 
 class Ribbon{
 public:
-    Ribbon(ofPoint startingPoint, ofVec3f startingDirection, float speed, int xb, int zb, int mp);
+    Ribbon(ofPoint startingPoint, ofVec3f startingDirection, float speed, int xb, int yb, int zb, int mp);
     void changeDirection(float x, float y, float z);
     void changeDirection();
     void update();
@@ -15,6 +15,7 @@ private:
     ofVec3f direction;
     float ribbonSpeed;
     int xBoundary;
+    int yBoundary;
     int zBoundary;
     int maxPointsCount;
 };

@@ -3,18 +3,20 @@
 static const int TRIANGLE_SIZE = 10;
 static const int MESH_WIDTH = 250;
 static const int MESH_HEIGHT = 250;
+static const int MESHED_WIDTH_SIZE = MESH_WIDTH * TRIANGLE_SIZE;
+static const int MESHED_HEIGHT_SIZE = MESH_HEIGHT * TRIANGLE_SIZE;
+static const int CAM_MAX_X = 1000;
+static const int CAM_MAX_Y = 1000;
+static const int CAM_MAX_Z = 1000;
+static const int CAM_SPEED = 5;
+static const int MAX_DOTS = 50;
+static const int MAX_RIBBONS = 50;
+static const ofVec3f CENTER = ofVec3f(0, 0, 0);
 
 
 ofApp::ofApp() {
     space = new Space(MESH_HEIGHT, MESH_WIDTH, TRIANGLE_SIZE, 130.0, 100, "space3.jpg");
     floor = new Floor(MESH_HEIGHT, MESH_WIDTH, TRIANGLE_SIZE, 5, space->getSpaceMesh().getColors());
-    dots.push_back(new Dots(50, 200, ofPoint(500, 500, 500), "dot.png"));
-    dots.push_back(new Dots(50, 200, ofPoint(0, 500, 500), "dot.png"));
-
-    ribbons.push_back(new Ribbon(ofPoint(200, 0, 200), ofVec3f(0, 5, 0), 5.0, MESH_WIDTH * TRIANGLE_SIZE, 200, 500));
-    ribbons.push_back(new Ribbon(ofPoint(400, 0, 100), ofVec3f(0, 5, 0), 5.0, MESH_WIDTH * TRIANGLE_SIZE, 200, 500));
-    ribbons.push_back(new Ribbon(ofPoint(300, 0, 150), ofVec3f(0, 5, 0), 5.0, MESH_WIDTH * TRIANGLE_SIZE, 200, 500));
-    
     postGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, false);
     postGlitch.setFx(OFXPOSTGLITCH_GLOW, false);
     postGlitch.setFx(OFXPOSTGLITCH_SHAKER, false);
@@ -63,6 +65,11 @@ void ofApp::setup(){
     
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA, 0);
     postGlitch.setup(&fbo);
+    
+    cam.setTarget(CENTER);
+    camPosition = ofVec3f(-500, 0, 200);
+    cam.setPosition(camPosition);
+
 }
 
 void ofApp::exit(){
@@ -76,9 +83,16 @@ void ofApp::update(){
     strm << "fps: " << ofGetFrameRate();
     ofSetWindowTitle(strm.str());
     
-    //cam.enableInertia();
-    cam.move(0, 0, -1 * (ofGetElapsedTimef()/3.0f));
-    //cam.rotateDeg(ofNoise(ofGetElapsedTimef()) - 0.5, 0, 0, 10);
+    cam.setTarget(CENTER);
+    int xMove = abs(camPosition.x - cam.getX()) < CAM_SPEED ? 0 : (camPosition.x - cam.getX()) / abs((camPosition.x - cam.getX()));
+    int yMove = abs(camPosition.y - cam.getY()) < CAM_SPEED ? 0 : (camPosition.y - cam.getY()) / abs((camPosition.y - cam.getY()));
+    int zMove = abs(camPosition.z - cam.getZ()) < CAM_SPEED ? 0 : (camPosition.z - cam.getZ()) / abs((camPosition.z - cam.getZ()));
+    cam.move(xMove * CAM_SPEED, yMove * CAM_SPEED, zMove * CAM_SPEED);
+    
+    ofLog(ofLogLevel::OF_LOG_NOTICE, ofToString(cam.getPosition()));
+    cam.enableInertia();
+    //cam.move(0, 0, -1 * (ofGetElapsedTimef()/3.0f));
+    cam.rotateDeg(ofNoise(ofGetElapsedTimef()) - 0.5, ofNoise(ofGetElapsedTimef() + 113) - 0.5, ofNoise(ofGetElapsedTimef() + 42) - 0.5, 10);
     
     for (vector<Ribbon*>::iterator it = ribbons.begin(); it < ribbons.end(); it++) {
         (*it)->update();
@@ -95,10 +109,12 @@ void ofApp::draw(){
     cam.begin();
     ofClear(0,0,0,255);
     ofSetLineWidth(1);
+    
+    ofDrawBox(CENTER, 20);
     // matrix stuff
     ofPushMatrix();
-    ofTranslate(-(MESH_WIDTH*TRIANGLE_SIZE)/2, -ofGetHeight()/2);
-    ofRotateDeg(90, -1, 0, 0);
+    ofTranslate(-MESHED_WIDTH_SIZE/2, -MESHED_HEIGHT_SIZE/2);
+//    ofRotateDeg(90, -1, 0, 0);
     
     // draw floor
     floorShader.begin();
@@ -158,6 +174,20 @@ void ofApp::draw(){
     }
 }
 
+void ofApp::setRandomCamPosition(){
+    int x = (int) ofRandom(CAM_MAX_X * 2)-CAM_MAX_X;
+    int y = (int) ofRandom(CAM_MAX_Z * 2)-CAM_MAX_Z;
+    int z = (int) ofRandom(CAM_MAX_Z * 2)-CAM_MAX_Z;
+    camPosition = ofVec3f(x, y, z);
+}
+
+void ofApp::addRibbon(){
+    ribbons.push_back(new Ribbon(ofPoint(ofRandom(MESHED_WIDTH_SIZE), ofRandom(MESHED_WIDTH_SIZE), ofRandom(MESHED_WIDTH_SIZE) - MESHED_WIDTH_SIZE/2), ofVec3f(0, 5, 0), 5.0, MESHED_WIDTH_SIZE, MESHED_HEIGHT_SIZE, MESHED_WIDTH_SIZE, 500));
+}
+
+void ofApp::addDots(){
+    dots.push_back(new Dots(50, 200, ofPoint(ofRandom(MESHED_WIDTH_SIZE), ofRandom(MESHED_WIDTH_SIZE), ofRandom(MESHED_WIDTH_SIZE) - MESHED_WIDTH_SIZE/2), "dot.png"));
+}
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
@@ -193,6 +223,15 @@ void ofApp::keyPressed(int key) {
             for (auto it = ribbons.begin(); it < ribbons.end(); it++) {
                 (*it)->changeDirection();
             }
+            break;
+        case 'x':
+            addRibbon();
+            break;
+        case 'c':
+            addDots();
+            break;
+        case 'l':
+            setRandomCamPosition();
             break;
         default:
             break;

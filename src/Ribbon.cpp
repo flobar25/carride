@@ -1,12 +1,13 @@
 #include "Ribbon.h"
 
-Ribbon::Ribbon(ofPoint startingPoint, ofVec3f startingDirection, float speed, int xb, int zb, int mp){
+Ribbon::Ribbon(ofPoint startingPoint, ofVec3f startingDirection, float speed, int xb, int yb, int zb, int mp){
     ribbonMesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINE_STRIP);
     ribbonMesh.addVertex(startingPoint);
     direction = startingDirection;
     lastPoint = startingPoint;
     ribbonSpeed = speed;
     xBoundary = xb;
+    yBoundary = yb;
     zBoundary = zb;
     maxPointsCount = mp;
     ribbonMesh.addVertex(lastPoint);
@@ -39,6 +40,9 @@ void Ribbon::update() {
     if (lastPoint.z + direction.z > zBoundary || lastPoint.z + direction.z < -zBoundary) {
         changeDirection(direction.x, direction.y, -direction.z);
     }
+    if (lastPoint.y + direction.y < 0 || lastPoint.y + direction.y > yBoundary) {
+        changeDirection(direction.x, -direction.y, direction.z);
+    }
     
     lastPoint.x = lastPoint.x + direction.x;
     lastPoint.y = lastPoint.y + direction.y;
@@ -50,7 +54,7 @@ void Ribbon::update() {
 void Ribbon::draw() {
     // draw lines
     ofEnableAlphaBlending();
-    ofSetLineWidth(5);
+    ofSetLineWidth(4);
     ofSetColor(ofColor(210, 255, 252, 255));
     ribbonMesh.draw();
     ofSetLineWidth(1);

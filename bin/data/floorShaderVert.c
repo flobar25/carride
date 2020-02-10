@@ -16,10 +16,6 @@ void main() {
         v.z = v.z - value *10;
     }
     
-//    if (v.y < -cameraZ){
-//        //v.y += meshHeight * (1 + (-cameraZ / meshHeight));
-//        v.y += 2500;
-//    }
     
     vec4 posHomog = vec4(v, 1.0);
     gl_Position = gl_ModelViewProjectionMatrix * posHomog;

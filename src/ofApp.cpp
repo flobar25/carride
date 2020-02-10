@@ -69,6 +69,7 @@ void ofApp::setup(){
     cam.setTarget(CENTER);
     camPosition = ofVec3f(-500, 0, 200);
     cam.setPosition(camPosition);
+//    cam.rollDeg(90);
 
 }
 

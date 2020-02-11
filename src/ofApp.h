@@ -54,6 +54,7 @@ private:
     // camera
     ofEasyCam cam;
     ofVec3f camPosition;
+    int roll;
     
     // recording
     ofxImageSequenceRecorder recorder;

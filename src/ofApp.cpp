@@ -8,14 +8,16 @@ static const int MESHED_HEIGHT_SIZE = MESH_HEIGHT * TRIANGLE_SIZE;
 static const int CAM_MAX_X = 1000;
 static const int CAM_MAX_Y = 1000;
 static const int CAM_MAX_Z = 1000;
-static const int CAM_SPEED = 5;
+static const float CAM_NOISE_AMOUNT = 1.0;
+static const int CAM_SPEED = 10;
+static const int ROLL_SPEED = 1;
 static const int MAX_DOTS = 50;
 static const int MAX_RIBBONS = 50;
-static const ofVec3f CENTER = ofVec3f(0, 0, 0);
+static const ofVec3f CENTER = ofVec3f(0, -MESHED_HEIGHT_SIZE/2, -MESHED_HEIGHT_SIZE/2);
 
 
 ofApp::ofApp() {
-    space = new Space(MESH_HEIGHT, MESH_WIDTH, TRIANGLE_SIZE, 130.0, 100, "space3.jpg");
+    space = new Space(MESH_HEIGHT, MESH_WIDTH, TRIANGLE_SIZE, 150.0, 75, "space3.jpg");
     floor = new Floor(MESH_HEIGHT, MESH_WIDTH, TRIANGLE_SIZE, 5, space->getSpaceMesh().getColors());
     postGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, false);
     postGlitch.setFx(OFXPOSTGLITCH_GLOW, false);
@@ -63,13 +65,12 @@ void ofApp::setup(){
     dotShader.load("dotShaderVert.c", "dotShaderFrag.c");
     invertShader.load("invertShaderVert.c", "invertShaderFrag.c");
     
-    fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA, 0);
+    fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB, 0);
     postGlitch.setup(&fbo);
     
-    cam.setTarget(CENTER);
-    camPosition = ofVec3f(-500, 0, 200);
+    camPosition = ofVec3f(0, -400, 0);
+    roll = 0;
     cam.setPosition(camPosition);
-//    cam.rollDeg(90);
 
 }
 
@@ -85,15 +86,26 @@ void ofApp::update(){
     ofSetWindowTitle(strm.str());
     
     cam.setTarget(CENTER);
-    int xMove = abs(camPosition.x - cam.getX()) < CAM_SPEED ? 0 : (camPosition.x - cam.getX()) / abs((camPosition.x - cam.getX()));
-    int yMove = abs(camPosition.y - cam.getY()) < CAM_SPEED ? 0 : (camPosition.y - cam.getY()) / abs((camPosition.y - cam.getY()));
-    int zMove = abs(camPosition.z - cam.getZ()) < CAM_SPEED ? 0 : (camPosition.z - cam.getZ()) / abs((camPosition.z - cam.getZ()));
-    cam.move(xMove * CAM_SPEED, yMove * CAM_SPEED, zMove * CAM_SPEED);
-    
-    ofLog(ofLogLevel::OF_LOG_NOTICE, ofToString(cam.getPosition()));
-    cam.enableInertia();
-    //cam.move(0, 0, -1 * (ofGetElapsedTimef()/3.0f));
-    cam.rotateDeg(ofNoise(ofGetElapsedTimef()) - 0.5, ofNoise(ofGetElapsedTimef() + 113) - 0.5, ofNoise(ofGetElapsedTimef() + 42) - 0.5, 10);
+    ofVec3f move = camPosition - cam.getPosition();
+    if (move.length() > CAM_SPEED) {
+        move.normalize();
+        move *= CAM_SPEED;
+        cam.move(move);
+        cam.enableInertia();
+    }
+
+    float noiseX = (ofNoise(ofGetElapsedTimef()) - 0.5) * CAM_NOISE_AMOUNT;
+    float noiseY = (ofNoise(ofGetElapsedTimef() + 113) - 0.5) * CAM_NOISE_AMOUNT;
+    float noiseZ = (ofNoise(ofGetElapsedTimef() + 42) - 0.5) * CAM_NOISE_AMOUNT;
+    cam.rollDeg(noiseZ);
+    cam.tiltDeg(noiseX);
+    cam.panDeg(noiseY);
+//    ofLog(ofLogLevel::OF_LOG_NOTICE, ofToString(roll));
+//    if (roll > (cam.getRollDeg() + ROLL_SPEED)) {
+//        cam.rollDeg(ROLL_SPEED);
+//    } else if (roll < (cam.getRollDeg() - ROLL_SPEED)) {
+//        cam.rollDeg(-ROLL_SPEED);
+//    }
     
     for (vector<Ribbon*>::iterator it = ribbons.begin(); it < ribbons.end(); it++) {
         (*it)->update();
@@ -115,7 +127,7 @@ void ofApp::draw(){
     // matrix stuff
     ofPushMatrix();
     ofTranslate(-MESHED_WIDTH_SIZE/2, -MESHED_HEIGHT_SIZE/2);
-//    ofRotateDeg(90, -1, 0, 0);
+    ofRotateDeg(90, -1, 0, 0);
     
     // draw floor
     floorShader.begin();
@@ -173,13 +185,22 @@ void ofApp::draw(){
         screenCapture.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
         recorder.addFrame(screenCapture);
     }
+    
+    ofSetColor(ofColor::red);
+    ofDrawBitmapString("Position : " + ofToString(cam.getPosition()), 100, 100);
+    ofDrawBitmapString("Up axis : " + ofToString(cam.getUpAxis()), 100, 120);
+    ofDrawBitmapString("Target : " + ofToString(cam.getTarget().getPosition()), 100, 140);
+    ofDrawBitmapString("Roll deg : " + ofToString(cam.getRollDeg()), 100, 160);
+    ofDrawBitmapString("Pitch deg : " + ofToString(cam.getPitchDeg()), 100, 180);
+    ofDrawBitmapString("Heading deg : " + ofToString(cam.getHeadingDeg()), 100, 200);
 }
 
 void ofApp::setRandomCamPosition(){
     int x = (int) ofRandom(CAM_MAX_X * 2)-CAM_MAX_X;
     int y = (int) ofRandom(CAM_MAX_Z * 2)-CAM_MAX_Z;
     int z = (int) ofRandom(CAM_MAX_Z * 2)-CAM_MAX_Z;
-    camPosition = ofVec3f(x, y, z);
+    camPosition = CENTER + ofVec3f(x, y, z);
+    roll = (int) ofRandom(360) -180;
 }
 
 void ofApp::addRibbon(){
@@ -233,6 +254,9 @@ void ofApp::keyPressed(int key) {
             break;
         case 'l':
             setRandomCamPosition();
+            break;
+        case 'k':
+            cam.lookAt(CENTER);
             break;
         default:
             break;

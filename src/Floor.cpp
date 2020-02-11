@@ -113,6 +113,7 @@ void Floor::update() {
 }
 
 void Floor::draw() {
+    ofSetColor(ofColor::white);
     floorMesh.drawWireframe();
     for (int i = 0; i < trianglesMeshes.size(); i++){
         //ofLog(ofLogLevel::OF_LOG_NOTICE, ofToString(trianglesMeshesActivation[i]));

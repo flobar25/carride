@@ -105,30 +105,8 @@ void ofApp::update(){
     } else if (currentUpVec.y > targetUpVec.y + ROLL_SPEED) {
         currentUpVec.y -= ROLL_SPEED;
     }
-//    currentUpVec.normalize();
     
     cam.lookAt(CENTER, currentUpVec.getNormalized());
-
-//    float rollTotal = 0; (ofNoise(ofGetElapsedTimef()) - 0.5) * CAM_NOISE_AMOUNT;
-//    float pitchTotal = 0;(ofNoise(ofGetElapsedTimef() + 113) - 0.5) * CAM_NOISE_AMOUNT;
-//    float headingTotal = 0;(ofNoise(ofGetElapsedTimef() + 42) - 0.5) * CAM_NOISE_AMOUNT;
-//
-//    if (roll > camRoll + 180 + ROLL_SPEED) {
-//        rollTotal += ROLL_SPEED;
-//    } else if (roll < camRoll + 180 - ROLL_SPEED ) {
-//        rollTotal -= ROLL_SPEED;
-//    }
-//
-//    ofLog(ofLogLevel::OF_LOG_NOTICE, "-----------------------------");
-//    ofLog(ofLogLevel::OF_LOG_NOTICE, ofToString(roll));
-//    ofLog(ofLogLevel::OF_LOG_NOTICE, ofToString(rollTotal));
-//    ofLog(ofLogLevel::OF_LOG_NOTICE, ofToString(camRoll));
-//    ofLog(ofLogLevel::OF_LOG_NOTICE, "-----------------------------");
-//
-//    cam.rollDeg(rollTotal);
-//    cam.tiltDeg(pitchTotal);
-//    cam.panDeg(headingTotal);
-
     
     for (vector<Ribbon*>::iterator it = ribbons.begin(); it < ribbons.end(); it++) {
         (*it)->update();
@@ -183,6 +161,7 @@ void ofApp::draw(){
     ofEnableBlendMode(OF_BLENDMODE_ADD);
     ofEnablePointSprites();
     dotShader.begin();
+    dotShader.setUniform1f("ellapsedTime", ofGetElapsedTimef());
     for (auto it = dots.begin(); it < dots.end(); it++) {
         (*it)->draw();
     }
@@ -233,7 +212,7 @@ void ofApp::addRibbon(){
 }
 
 void ofApp::addDots(){
-    dots.push_back(new Dots(50, 200, ofPoint(ofRandom(MESHED_WIDTH_SIZE), ofRandom(MESHED_WIDTH_SIZE), ofRandom(MESHED_WIDTH_SIZE) - MESHED_WIDTH_SIZE/2), "dot.png"));
+    dots.push_back(new Dots(30, 600, ofPoint(ofRandom(MESHED_WIDTH_SIZE), ofRandom(MESHED_WIDTH_SIZE), ofRandom(MESHED_WIDTH_SIZE) - MESHED_WIDTH_SIZE/2), "dot.png"));
 }
 
 //--------------------------------------------------------------

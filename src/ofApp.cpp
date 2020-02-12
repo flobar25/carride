@@ -10,7 +10,7 @@ static const int CAM_MAX_Y = 1000;
 static const int CAM_MAX_Z = 1000;
 static const float CAM_NOISE_AMOUNT = 1.0;
 static const int CAM_SPEED = 10;
-static const int ROLL_SPEED = 1;
+static const float ROLL_SPEED = 0.02;
 static const int MAX_DOTS = 50;
 static const int MAX_RIBBONS = 50;
 static const ofVec3f CENTER = ofVec3f(0, -MESHED_HEIGHT_SIZE/2, -MESHED_HEIGHT_SIZE/2);
@@ -69,7 +69,8 @@ void ofApp::setup(){
     postGlitch.setup(&fbo);
     
     camPosition = ofVec3f(0, -400, 0);
-    roll = 0;
+    targetUpVec = ofVec3f(0,1,0);
+    currentUpVec = targetUpVec;
     cam.setPosition(camPosition);
 
 }
@@ -85,27 +86,49 @@ void ofApp::update(){
     strm << "fps: " << ofGetFrameRate();
     ofSetWindowTitle(strm.str());
     
-    cam.setTarget(CENTER);
     ofVec3f move = camPosition - cam.getPosition();
     if (move.length() > CAM_SPEED) {
         move.normalize();
         move *= CAM_SPEED;
         cam.move(move);
-        cam.enableInertia();
     }
+    
+    if (currentUpVec.x < targetUpVec.x - ROLL_SPEED) {
+        currentUpVec.x += ROLL_SPEED;
+        
+    } else if (currentUpVec.x > targetUpVec.x + ROLL_SPEED) {
+        currentUpVec.x -= ROLL_SPEED;
+    }
+    
+    if (currentUpVec.y < targetUpVec.y - ROLL_SPEED) {
+        currentUpVec.y += ROLL_SPEED;
+    } else if (currentUpVec.y > targetUpVec.y + ROLL_SPEED) {
+        currentUpVec.y -= ROLL_SPEED;
+    }
+//    currentUpVec.normalize();
+    
+    cam.lookAt(CENTER, currentUpVec.getNormalized());
 
-    float noiseX = (ofNoise(ofGetElapsedTimef()) - 0.5) * CAM_NOISE_AMOUNT;
-    float noiseY = (ofNoise(ofGetElapsedTimef() + 113) - 0.5) * CAM_NOISE_AMOUNT;
-    float noiseZ = (ofNoise(ofGetElapsedTimef() + 42) - 0.5) * CAM_NOISE_AMOUNT;
-    cam.rollDeg(noiseZ);
-    cam.tiltDeg(noiseX);
-    cam.panDeg(noiseY);
-//    ofLog(ofLogLevel::OF_LOG_NOTICE, ofToString(roll));
-//    if (roll > (cam.getRollDeg() + ROLL_SPEED)) {
-//        cam.rollDeg(ROLL_SPEED);
-//    } else if (roll < (cam.getRollDeg() - ROLL_SPEED)) {
-//        cam.rollDeg(-ROLL_SPEED);
+//    float rollTotal = 0; (ofNoise(ofGetElapsedTimef()) - 0.5) * CAM_NOISE_AMOUNT;
+//    float pitchTotal = 0;(ofNoise(ofGetElapsedTimef() + 113) - 0.5) * CAM_NOISE_AMOUNT;
+//    float headingTotal = 0;(ofNoise(ofGetElapsedTimef() + 42) - 0.5) * CAM_NOISE_AMOUNT;
+//
+//    if (roll > camRoll + 180 + ROLL_SPEED) {
+//        rollTotal += ROLL_SPEED;
+//    } else if (roll < camRoll + 180 - ROLL_SPEED ) {
+//        rollTotal -= ROLL_SPEED;
 //    }
+//
+//    ofLog(ofLogLevel::OF_LOG_NOTICE, "-----------------------------");
+//    ofLog(ofLogLevel::OF_LOG_NOTICE, ofToString(roll));
+//    ofLog(ofLogLevel::OF_LOG_NOTICE, ofToString(rollTotal));
+//    ofLog(ofLogLevel::OF_LOG_NOTICE, ofToString(camRoll));
+//    ofLog(ofLogLevel::OF_LOG_NOTICE, "-----------------------------");
+//
+//    cam.rollDeg(rollTotal);
+//    cam.tiltDeg(pitchTotal);
+//    cam.panDeg(headingTotal);
+
     
     for (vector<Ribbon*>::iterator it = ribbons.begin(); it < ribbons.end(); it++) {
         (*it)->update();
@@ -186,13 +209,15 @@ void ofApp::draw(){
         recorder.addFrame(screenCapture);
     }
     
-    ofSetColor(ofColor::red);
+    ofSetColor(ofColor::green);
     ofDrawBitmapString("Position : " + ofToString(cam.getPosition()), 100, 100);
     ofDrawBitmapString("Up axis : " + ofToString(cam.getUpAxis()), 100, 120);
     ofDrawBitmapString("Target : " + ofToString(cam.getTarget().getPosition()), 100, 140);
     ofDrawBitmapString("Roll deg : " + ofToString(cam.getRollDeg()), 100, 160);
     ofDrawBitmapString("Pitch deg : " + ofToString(cam.getPitchDeg()), 100, 180);
     ofDrawBitmapString("Heading deg : " + ofToString(cam.getHeadingDeg()), 100, 200);
+    ofDrawBitmapString("Current upvec : " + ofToString(currentUpVec), 100, 220);
+    ofDrawBitmapString("Target upVec : " + ofToString(targetUpVec), 100, 240);
 }
 
 void ofApp::setRandomCamPosition(){
@@ -200,7 +225,7 @@ void ofApp::setRandomCamPosition(){
     int y = (int) ofRandom(CAM_MAX_Z * 2)-CAM_MAX_Z;
     int z = (int) ofRandom(CAM_MAX_Z * 2)-CAM_MAX_Z;
     camPosition = CENTER + ofVec3f(x, y, z);
-    roll = (int) ofRandom(360) -180;
+    targetUpVec = ofVec3f(ofRandom(2) - 1, ofRandom(2) - 1, 0).normalize();
 }
 
 void ofApp::addRibbon(){

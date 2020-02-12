@@ -10,9 +10,12 @@ static const int CAM_MAX_Y = 1000;
 static const int CAM_MAX_Z = 1000;
 static const float CAM_NOISE_AMOUNT = 1.0;
 static const int CAM_SPEED = 10;
+static const float LOOK_AT_SCALE = 0.5;
+static const int LOOK_AT_SPEED = 3;
 static const float ROLL_SPEED = 0.02;
 static const int MAX_DOTS = 50;
 static const int MAX_RIBBONS = 50;
+static const int TIME_TO_BUILD_FLOOR = 10000;
 static const ofVec3f CENTER = ofVec3f(0, -MESHED_HEIGHT_SIZE/2, -MESHED_HEIGHT_SIZE/2);
 
 
@@ -68,10 +71,13 @@ void ofApp::setup(){
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB, 0);
     postGlitch.setup(&fbo);
     
-    camPosition = ofVec3f(0, -400, 0);
+
     targetUpVec = ofVec3f(0,1,0);
     currentUpVec = targetUpVec;
-    cam.setPosition(camPosition);
+    camPosition = ofVec3f(0, -400, 0);
+    currentLookAt = CENTER;
+    targetLookAt = currentLookAt;
+    
 
 }
 
@@ -86,27 +92,37 @@ void ofApp::update(){
     strm << "fps: " << ofGetFrameRate();
     ofSetWindowTitle(strm.str());
     
+    
+    // position
     ofVec3f move = camPosition - cam.getPosition();
     if (move.length() > CAM_SPEED) {
         move.normalize();
         move *= CAM_SPEED;
-        cam.move(move);
     }
     
+    // look at
+    ofVec3f lookAtDiff = targetLookAt - currentLookAt;
+    if (lookAtDiff.length() > LOOK_AT_SPEED) {
+        lookAtDiff.normalize();
+        lookAtDiff *= LOOK_AT_SPEED;
+        currentLookAt += lookAtDiff;
+    }
+    
+    // updir
     if (currentUpVec.x < targetUpVec.x - ROLL_SPEED) {
         currentUpVec.x += ROLL_SPEED;
         
     } else if (currentUpVec.x > targetUpVec.x + ROLL_SPEED) {
         currentUpVec.x -= ROLL_SPEED;
     }
-    
     if (currentUpVec.y < targetUpVec.y - ROLL_SPEED) {
         currentUpVec.y += ROLL_SPEED;
     } else if (currentUpVec.y > targetUpVec.y + ROLL_SPEED) {
         currentUpVec.y -= ROLL_SPEED;
     }
     
-    cam.lookAt(CENTER, currentUpVec.getNormalized());
+    cam.move(move);
+    cam.lookAt(currentLookAt, currentUpVec.getNormalized());
     
     for (vector<Ribbon*>::iterator it = ribbons.begin(); it < ribbons.end(); it++) {
         (*it)->update();
@@ -124,7 +140,7 @@ void ofApp::draw(){
     ofClear(0,0,0,255);
     ofSetLineWidth(1);
     
-    ofDrawBox(CENTER, 20);
+    ofDrawBox(currentLookAt, 20);
     // matrix stuff
     ofPushMatrix();
     ofTranslate(-MESHED_WIDTH_SIZE/2, -MESHED_HEIGHT_SIZE/2);
@@ -197,6 +213,8 @@ void ofApp::draw(){
     ofDrawBitmapString("Heading deg : " + ofToString(cam.getHeadingDeg()), 100, 200);
     ofDrawBitmapString("Current upvec : " + ofToString(currentUpVec), 100, 220);
     ofDrawBitmapString("Target upVec : " + ofToString(targetUpVec), 100, 240);
+    ofDrawBitmapString("Current lookat : " + ofToString(currentLookAt), 100, 260);
+    ofDrawBitmapString("Target lookat : " + ofToString(targetLookAt), 100, 280);
 }
 
 void ofApp::setRandomCamPosition(){
@@ -204,6 +222,12 @@ void ofApp::setRandomCamPosition(){
     int y = (int) ofRandom(CAM_MAX_Z * 2)-CAM_MAX_Z;
     int z = (int) ofRandom(CAM_MAX_Z * 2)-CAM_MAX_Z;
     camPosition = CENTER + ofVec3f(x, y, z);
+    
+    x = (int) (ofRandom(CAM_MAX_X * 2)-CAM_MAX_X) * LOOK_AT_SCALE;
+    y = (int) (ofRandom(CAM_MAX_Z * 2)-CAM_MAX_Z) * LOOK_AT_SCALE;
+    z = (int) (ofRandom(CAM_MAX_Z * 2)-CAM_MAX_Z) * LOOK_AT_SCALE;
+    targetLookAt = CENTER + ofVec3f(x, y, z);
+    
     targetUpVec = ofVec3f(ofRandom(2) - 1, ofRandom(2) - 1, 0).normalize();
 }
 

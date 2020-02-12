@@ -56,6 +56,8 @@ private:
     ofVec3f camPosition;
     ofVec3f targetUpVec;
     ofVec3f currentUpVec;
+    ofVec3f targetLookAt;
+    ofVec3f currentLookAt;
     
     // recording
     ofxImageSequenceRecorder recorder;

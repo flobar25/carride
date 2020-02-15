@@ -16,12 +16,14 @@ static const float ROLL_SPEED = 0.02;
 static const int MAX_DOTS = 50;
 static const int MAX_RIBBONS = 50;
 static const int TIME_TO_BUILD_FLOOR = 10000;
+static const float WAVE_SPEED = 1.0;
 static const ofVec3f CENTER = ofVec3f(0, -MESHED_HEIGHT_SIZE/2, -MESHED_HEIGHT_SIZE/2);
+static bool debugMode = false;
 
 
 ofApp::ofApp() {
     space = new Space(MESH_HEIGHT, MESH_WIDTH, TRIANGLE_SIZE, 150.0, 75, "space3.jpg");
-    floor = new Floor(MESH_HEIGHT, MESH_WIDTH, TRIANGLE_SIZE, 5, space->getSpaceMesh().getColors());
+    floor = new Floor(MESH_HEIGHT, MESH_WIDTH, TRIANGLE_SIZE, 5, space->getSpaceMesh().getColors(), WAVE_SPEED);
     postGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, false);
     postGlitch.setFx(OFXPOSTGLITCH_GLOW, false);
     postGlitch.setFx(OFXPOSTGLITCH_SHAKER, false);
@@ -48,6 +50,11 @@ ofApp::~ofApp() {
 }
 
 void ofApp::setup(){
+    ofDisableArbTex();
+    //dots.png
+    ofLoadImage(dotsTexture, "dot.png");
+    ofEnableArbTex();
+    
     //ofsetup
     ofSetFrameRate(30);
     ofEnableDepthTest();
@@ -106,6 +113,8 @@ void ofApp::update(){
         lookAtDiff.normalize();
         lookAtDiff *= LOOK_AT_SPEED;
         currentLookAt += lookAtDiff;
+    } else {
+        setRandomLookAt();
     }
     
     // updir
@@ -140,7 +149,7 @@ void ofApp::draw(){
     ofClear(0,0,0,255);
     ofSetLineWidth(1);
     
-    ofDrawBox(currentLookAt, 20);
+    if (debugMode) ofDrawBox(currentLookAt, 20);
     // matrix stuff
     ofPushMatrix();
     ofTranslate(-MESHED_WIDTH_SIZE/2, -MESHED_HEIGHT_SIZE/2);
@@ -149,8 +158,6 @@ void ofApp::draw(){
     // draw floor
     floorShader.begin();
     floorShader.setUniform1f("value", floor->getWaveValue());
-    floorShader.setUniform1f("cameraZ", cam.getZ());
-    floorShader.setUniform1f("meshHeight", MESH_HEIGHT * TRIANGLE_SIZE);
     floor->draw();
     floorShader.end();
     
@@ -204,17 +211,26 @@ void ofApp::draw(){
         recorder.addFrame(screenCapture);
     }
     
-    ofSetColor(ofColor::green);
-    ofDrawBitmapString("Position : " + ofToString(cam.getPosition()), 100, 100);
-    ofDrawBitmapString("Up axis : " + ofToString(cam.getUpAxis()), 100, 120);
-    ofDrawBitmapString("Target : " + ofToString(cam.getTarget().getPosition()), 100, 140);
-    ofDrawBitmapString("Roll deg : " + ofToString(cam.getRollDeg()), 100, 160);
-    ofDrawBitmapString("Pitch deg : " + ofToString(cam.getPitchDeg()), 100, 180);
-    ofDrawBitmapString("Heading deg : " + ofToString(cam.getHeadingDeg()), 100, 200);
-    ofDrawBitmapString("Current upvec : " + ofToString(currentUpVec), 100, 220);
-    ofDrawBitmapString("Target upVec : " + ofToString(targetUpVec), 100, 240);
-    ofDrawBitmapString("Current lookat : " + ofToString(currentLookAt), 100, 260);
-    ofDrawBitmapString("Target lookat : " + ofToString(targetLookAt), 100, 280);
+    if (debugMode) {
+        ofSetColor(ofColor::green);
+        ofDrawBitmapString("Position : " + ofToString(cam.getPosition()), 100, 100);
+        ofDrawBitmapString("Up axis : " + ofToString(cam.getUpAxis()), 100, 120);
+        ofDrawBitmapString("Target : " + ofToString(cam.getTarget().getPosition()), 100, 140);
+        ofDrawBitmapString("Roll deg : " + ofToString(cam.getRollDeg()), 100, 160);
+        ofDrawBitmapString("Pitch deg : " + ofToString(cam.getPitchDeg()), 100, 180);
+        ofDrawBitmapString("Heading deg : " + ofToString(cam.getHeadingDeg()), 100, 200);
+        ofDrawBitmapString("Current upvec : " + ofToString(currentUpVec), 100, 220);
+        ofDrawBitmapString("Target upVec : " + ofToString(targetUpVec), 100, 240);
+        ofDrawBitmapString("Current lookat : " + ofToString(currentLookAt), 100, 260);
+        ofDrawBitmapString("Target lookat : " + ofToString(targetLookAt), 100, 280);
+    }
+}
+
+void ofApp::setRandomLookAt() {
+    int x = (int) (ofRandom(CAM_MAX_X * 2)-CAM_MAX_X) * LOOK_AT_SCALE;
+    int y = (int) (ofRandom(CAM_MAX_Z * 2)-CAM_MAX_Z) * LOOK_AT_SCALE;
+    int z = (int) (ofRandom(CAM_MAX_Z * 2)-CAM_MAX_Z) * LOOK_AT_SCALE;
+    targetLookAt = CENTER + ofVec3f(x, y, z);
 }
 
 void ofApp::setRandomCamPosition(){
@@ -223,10 +239,7 @@ void ofApp::setRandomCamPosition(){
     int z = (int) ofRandom(CAM_MAX_Z * 2)-CAM_MAX_Z;
     camPosition = CENTER + ofVec3f(x, y, z);
     
-    x = (int) (ofRandom(CAM_MAX_X * 2)-CAM_MAX_X) * LOOK_AT_SCALE;
-    y = (int) (ofRandom(CAM_MAX_Z * 2)-CAM_MAX_Z) * LOOK_AT_SCALE;
-    z = (int) (ofRandom(CAM_MAX_Z * 2)-CAM_MAX_Z) * LOOK_AT_SCALE;
-    targetLookAt = CENTER + ofVec3f(x, y, z);
+    setRandomLookAt();
     
     targetUpVec = ofVec3f(ofRandom(2) - 1, ofRandom(2) - 1, 0).normalize();
 }
@@ -236,7 +249,13 @@ void ofApp::addRibbon(){
 }
 
 void ofApp::addDots(){
-    dots.push_back(new Dots(30, 600, ofPoint(ofRandom(MESHED_WIDTH_SIZE), ofRandom(MESHED_WIDTH_SIZE), ofRandom(MESHED_WIDTH_SIZE) - MESHED_WIDTH_SIZE/2), "dot.png"));
+    dots.push_back(new Dots(30, 600, ofPoint(ofRandom(MESHED_WIDTH_SIZE), ofRandom(MESHED_WIDTH_SIZE), ofRandom(MESHED_WIDTH_SIZE) - MESHED_WIDTH_SIZE/2),dotsTexture));
+}
+
+void ofApp::changeRibbonsDirection() {
+    for (auto it = ribbons.begin(); it < ribbons.end(); it++) {
+        (*it)->changeDirection();
+    }
 }
 
 //--------------------------------------------------------------
@@ -270,9 +289,7 @@ void ofApp::keyPressed(int key) {
             floor->toggleTriangles(4);
             break;
         case 'z':
-            for (auto it = ribbons.begin(); it < ribbons.end(); it++) {
-                (*it)->changeDirection();
-            }
+            changeRibbonsDirection();
             break;
         case 'x':
             addRibbon();
@@ -304,7 +321,40 @@ void ofApp::keyPressed(int key) {
 }
 
 void ofApp::newMidiMessage(ofxMidiMessage& eventArgs){
+    // kick
+    if (eventArgs.channel == 1){
+        postGlitch.setFx(OFXPOSTGLITCH_SHAKER, eventArgs.status == MidiStatus::MIDI_NOTE_ON);
+    }
     
+    // snare
+    if (eventArgs.channel == 2){
+        postGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, eventArgs.status == MidiStatus::MIDI_NOTE_ON);
+    }
+    
+    // wave
+    if (eventArgs.channel == 3 && eventArgs.status == MidiStatus::MIDI_NOTE_ON){
+        floor->setTargetWaveValue(eventArgs.velocity == 1 ? 0 : eventArgs.velocity);
+    }
+    
+    //direction
+    if (eventArgs.channel == 4 && eventArgs.status == MidiStatus::MIDI_NOTE_ON){
+        setRandomCamPosition();
+    }
+    
+    // dots
+    if (eventArgs.channel == 5 && eventArgs.status == MidiStatus::MIDI_NOTE_ON){
+        addDots();
+    }
+    
+    // ribbons
+    if (eventArgs.channel == 6 && eventArgs.status == MidiStatus::MIDI_NOTE_ON){
+        addRibbon();
+    }
+    
+    // ribbons direction
+    if (eventArgs.channel == 7 && eventArgs.status == MidiStatus::MIDI_NOTE_ON){
+        changeRibbonsDirection();
+    }
 }
 
 void ofApp::captureScreen(){

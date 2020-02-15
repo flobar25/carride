@@ -26,12 +26,15 @@ public:
     // MIDI
     void newMidiMessage(ofxMidiMessage& eventArgs);
     
+    void setRandomLookAt();
+    
     // cam
     void setRandomCamPosition();
     
     // visual
     void addRibbon();
     void addDots();
+    void changeRibbonsDirection();
     
     // events
     void keyPressed(int key);
@@ -69,6 +72,7 @@ private:
     Space* space;
     vector<Dots*> dots;
     vector<Ribbon*> ribbons;
+    ofTexture dotsTexture;
     
     //shaders
     ofShader floorShader;

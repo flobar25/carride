@@ -3,8 +3,6 @@
 #extension GL_EXT_gpu_shader4: enable
 
 uniform float value = 0.0;
-uniform float cameraZ = 0;
-uniform int meshHeight = 0;
 
 void main() {
     vec3 v = gl_Vertex.xyz;

@@ -3,7 +3,7 @@
 
 class Dots {
 public:
-    Dots(int dotsCount, float distance, ofPoint dotsCenter, string texturePath);
+    Dots(int dotsCount, float distance, ofPoint dotsCenter, ofTexture texture);
     void draw();
     
 private:

@@ -7,7 +7,8 @@
 #include "ofMain.h"
 #include "Floor.h"
 
-Floor::Floor(int height, int width, int trianglesSize, int trianglesSetCount, vector<ofColor_<float> >& colors) {
+Floor::Floor(int height, int width, int trianglesSize, int trianglesSetCount, vector<ofColor_<float> >& colors, float speed) {
+    waveSpeed = speed;
     // keeping track of the different meshes indexes
     vector<int> triangleMeshesIndexes;
     
@@ -107,9 +108,17 @@ void Floor::startWave() {
 }
 
 void Floor::update() {
-    if (waveValue > 0) {
-        waveValue -= ofGetElapsedTimef() - waveStartTime;
+    if (abs(targetWaveValue - waveValue) > waveSpeed) {
+        if (waveValue > targetWaveValue){
+            waveValue -= waveSpeed;
+        } else {
+            waveValue += waveSpeed;
+        }
     }
+}
+
+void Floor::setTargetWaveValue(float value) {
+    targetWaveValue = value;
 }
 
 void Floor::draw() {

@@ -19,7 +19,7 @@ static const int TIME_TO_BUILD_FLOOR = 10000;
 static const float WAVE_SPEED = 1.0;
 static const ofVec3f CENTER = ofVec3f(0, -MESHED_HEIGHT_SIZE/2, -MESHED_HEIGHT_SIZE/2);
 static bool debugMode = false;
-
+bool started = false;
 
 ofApp::ofApp() {
     space = new Space(MESH_HEIGHT, MESH_WIDTH, TRIANGLE_SIZE, 150.0, 75, "space3.jpg");
@@ -113,7 +113,7 @@ void ofApp::update(){
         lookAtDiff.normalize();
         lookAtDiff *= LOOK_AT_SPEED;
         currentLookAt += lookAtDiff;
-    } else {
+    } else if (started) {
         setRandomLookAt();
     }
     
@@ -234,6 +234,7 @@ void ofApp::setRandomLookAt() {
 }
 
 void ofApp::setRandomCamPosition(){
+    started = true;
     int x = (int) ofRandom(CAM_MAX_X * 2)-CAM_MAX_X;
     int y = (int) ofRandom(CAM_MAX_Z * 2)-CAM_MAX_Z;
     int z = (int) ofRandom(CAM_MAX_Z * 2)-CAM_MAX_Z;

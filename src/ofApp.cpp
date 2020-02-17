@@ -9,14 +9,14 @@ static const int CAM_MAX_X = 1000;
 static const int CAM_MAX_Y = 1000;
 static const int CAM_MAX_Z = 1000;
 static const float CAM_NOISE_AMOUNT = 1.0;
-static const int CAM_SPEED = 10;
+static const int CAM_SPEED = 5;
 static const float LOOK_AT_SCALE = 0.5;
-static const int LOOK_AT_SPEED = 3;
-static const float ROLL_SPEED = 0.02;
+static const float LOOK_AT_SPEED = 1.5;
+static const float ROLL_SPEED = 0.01;
 static const int MAX_DOTS = 50;
 static const int MAX_RIBBONS = 50;
 static const int TIME_TO_BUILD_FLOOR = 10000;
-static const float WAVE_SPEED = 1.0;
+static const float WAVE_SPEED = 0.5;
 static const ofVec3f CENTER = ofVec3f(0, -MESHED_HEIGHT_SIZE/2, -MESHED_HEIGHT_SIZE/2);
 static bool debugMode = false;
 bool started = false;
@@ -56,12 +56,13 @@ void ofApp::setup(){
     ofEnableArbTex();
     
     //ofsetup
-    ofSetFrameRate(30);
+    ofSetFrameRate(10);
     ofEnableDepthTest();
     
     //recording setup
     recorder.setPrefix(ofToDataPath("recording/frame_"));
-    recorder.setFormat("bmp");
+    recorder.setNumberWidth(8);
+    recorder.setFormat("png");
     recorder.startThread();
     
     // midi setup
